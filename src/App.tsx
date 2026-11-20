@@ -94,6 +94,9 @@ export function App() {
 
   return (
     <div>
+      <a href="#top" className="skip-link">
+        Skip to content
+      </a>
       <header className="site-header">
         <div className="site-header-inner">
           <a
@@ -368,7 +371,7 @@ export function App() {
                         note="Checkpoint 7 Oct 2026: 63 compiled x86 bytes matched across 3,205 oracle comparisons against the original DX-Ball 1.07 routine."
                         refNum={3}
                       />, REA traces the x86 DirectSound pan routine at{" "}
-                      <code>0x406409</code> through five evidence-backed steps—loading the
+                      <code>0x406409</code> through five evidence-backed steps: loading the
                       ball’s horizontal coordinate, multiplying by <code>1.5625</code>,
                       subtracting <code>500.0</code>, scaling, and truncating via{" "}
                       <code>__ftol</code>. Step through the assembly and probe the live oracle
@@ -389,7 +392,7 @@ export function App() {
                         refNum={1}
                       />. Because every control registers with <code>createAgent()</code>, an
                       agent can inspect and drive the exact same figures a human reader
-                      uses—cutting token consumption and tool calls compared to raw browser
+                      uses, cutting token consumption and tool calls compared to raw browser
                       automation.
                     </p>
                     <BenchmarkFigure />
@@ -462,7 +465,7 @@ export function App() {
                       label="Calling convention"
                       note="The ball X coordinate arrives via a hidden caller stack slot; caller disassembly at 0x411f40 was required to recover the parameter boundary."
                       refNum={3}
-                    />—yet recovering its exact C implementation requires reconciling caller
+                    />, yet recovering its exact C implementation requires reconciling caller
                     disassembly, raw memory reads of <code>.rdata</code> constants, and 3,205
                     oracle comparisons.
                   </div>
@@ -527,7 +530,7 @@ export function App() {
                         label="Evidence boundary"
                         note="Preload and ipcMain ranges come from Notion Desktop 7.6.1 app.asar; wrapper glue was connected by reading bundled code, distinct from cached web probes."
                         refNum={4}
-                      />—distinguishing verified desktop archive reads from separate cached
+                      />, distinguishing verified desktop archive reads from separate cached
                       web-asset probes.
                     </p>
                     <NotionIpcFigure />
@@ -571,7 +574,7 @@ export function App() {
                   <section id="env-pipeline" className="article-section">
                     <h2>Offline RL Pipeline</h2>
                     <p>
-                      Step through the four stages—Capture, Compile, Replay, and Grade—to see
+                      Step through the four stages (Capture, Compile, Replay, and Grade) to see
                       how REA pins network responses by SHA-256 digest and isolates agent
                       rollouts from external systems
                       <Sidenote

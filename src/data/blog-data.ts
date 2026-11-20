@@ -566,7 +566,7 @@ export const REFERENCES = [
   },
   {
     num: 3,
-    cite: "REA Showcase (2026). “Rebuilding DX-Ball 1.07 from its executable — sound panning reconstruction & 3,205 oracle checks.”",
+    cite: "REA Showcase (2026). “Rebuilding DX-Ball 1.07 from its executable: sound panning reconstruction & 3,205 oracle checks.”",
     url: "https://rea.tools/showcase/dx-ball/",
     label: "rea.tools/showcase/dx-ball",
   },
