@@ -790,49 +790,59 @@
     text-decoration: underline;
   }
 
-  /* Desktop RHS Sidenotes Rail (SID-2 style) */
-  .sidenotes-rail {
-    position: sticky;
-    top: 5rem;
-    font-size: 0.78rem;
-    line-height: 1.48;
-  }
-
-  .sidenotes-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-  }
-
-  .sidenote-item {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 0.45rem;
-    padding: 0.5rem 0.6rem;
+  /* Paragraph-Anchored Tufte Sidenotes (SID-2 style) */
+  .sidenote {
+    float: right;
+    clear: right;
+    width: 240px;
+    margin-right: calc(-240px - 2.75rem);
+    margin-top: 0.12rem;
+    margin-bottom: 0.85rem;
+    padding: 0.48rem 0.62rem;
     border-left: 2px solid var(--border);
     border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    font-family: var(--font-sans);
+    font-size: 0.76rem;
+    line-height: 1.48;
+    font-weight: 400;
+    color: var(--ink-secondary);
     transition: background-color 140ms ease, border-color 140ms ease;
   }
 
-  .sidenote-item[data-highlighted="true"] {
+  .sidenote[data-highlighted="true"] {
     background: var(--accent-soft);
     border-left-color: var(--accent);
   }
 
+  .sidenote-head {
+    display: flex;
+    align-items: baseline;
+    gap: 0.35rem;
+    margin-bottom: 0.22rem;
+  }
+
   .sidenote-num {
     font-family: var(--font-mono);
-    font-size: 0.72rem;
+    font-size: 0.7rem;
     font-weight: 600;
     color: var(--accent-ink);
-    padding-top: 0.05rem;
+    line-height: 1.4;
+  }
+
+  .sidenote-label {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink);
   }
 
   .sidenote-text {
-    margin: 0 0 0.3rem;
+    display: block;
+    margin: 0 0 0.28rem;
     color: var(--ink-secondary);
+    font-size: 0.76rem;
   }
 
   .sidenote-link {
@@ -1108,7 +1118,7 @@
       max-width: 1040px;
     }
 
-    .sidenotes-rail {
+    .sidenote {
       display: none;
     }
   }

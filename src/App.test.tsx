@@ -119,16 +119,16 @@ describe("REA Research Blog interactive UX", () => {
     expect(screen.getByText(/routes_synthesized/i)).toBeTruthy()
   })
 
-  it("renders RHS sidenotes rail, reading progress bar, and opens inline citation popover", async () => {
+  it("renders paragraph-anchored Tufte sidenotes, reading progress bar, and opens inline note popover", async () => {
     const user = userEvent.setup()
     render(<App />)
 
     expect(screen.getByRole("progressbar", { name: /Reading progress/i })).toBeTruthy()
-    const rail = screen.getByRole("complementary", { name: /Margin citations/i })
-    expect(within(rail).getByText(/github\.com\/vercel-labs\/ui/i)).toBeTruthy()
+    const marginNote = screen.getByRole("note", { name: /Margin note 3: Showcase scope/i })
+    expect(within(marginNote).getByText(/3,205 oracle comparisons/i)).toBeTruthy()
 
-    const citeBtn = screen.getAllByRole("button", { name: /Citation 3:/i })[0]
-    await user.click(citeBtn)
-    expect(screen.getByText(/Reference \[3\]/i)).toBeTruthy()
+    const noteBtn = screen.getByRole("button", { name: /Note 3: Showcase scope/i })
+    await user.click(noteBtn)
+    expect(screen.getByText(/Note \[3\] · Showcase scope/i)).toBeTruthy()
   })
 })
