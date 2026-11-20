@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto"
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { JSDOM } from "jsdom"
@@ -11,6 +11,7 @@ import { App } from "../src/App.tsx"
 import { BLOG_POSTS } from "../src/data/blog-data.ts"
 import { parseRoute } from "../src/lib/router.ts"
 import { DEFAULT_SITE_ORIGIN, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN } from "../src/lib/site.ts"
+import { generateOgAssets } from "./generate-og-assets.mjs"
 
 const HOME = `${SITE_ORIGIN}/`
 const SITE_IMAGE = `${SITE_ORIGIN}/og-image.png`
@@ -20,6 +21,11 @@ const RESEARCH_PATH = "/research"
 const RESEARCH_TITLE = "Research Archive"
 const ARD_PATH = "/.well-known/ard.json"
 const DIST = fileURLToPath(new URL("../dist/", import.meta.url))
+
+const latinFont = readdirSync(join(DIST, "assets"), { withFileTypes: true })
+  .filter((entry) => entry.isFile() && /^geist-latin-wght-normal-[^.]+\.woff2$/.test(entry.name))
+  .map((entry) => entry.name).sort()[0]
+if (!latinFont) throw new Error("Missing Geist Latin variable font (geist-latin-wght-normal-*.woff2) in dist/assets")
 
 const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }
 const escapeMarkup = (value) => value.replace(/[&<>"']/g, (character) => entities[character])
@@ -65,6 +71,8 @@ const serializeJsonLd = (data) =>
     slash ? "<\\/" : "\\u003c",
   )
 
+const postImage = (post) => `${SITE_ORIGIN}/og/${post.slug}.png`
+
 function blogPosting(post) {
   return {
     "@type": "BlogPosting",
@@ -78,7 +86,7 @@ function blogPosting(post) {
     publisher: { "@id": PUBLISHER_ID },
     isPartOf: { "@id": WEBSITE_ID },
     url: post.url,
-    image: SITE_IMAGE,
+    image: postImage(post),
   }
 }
 
@@ -117,10 +125,17 @@ function breadcrumbs(route) {
 }
 
 function renderPage(route, markup) {
-  const { title, description, url, ogType = "website", entity, noindex, markdownPath } = route
+  const { title, description, url, ogType = "website", entity, noindex, markdownPath, image = SITE_IMAGE } = route
   const body = template.replace(rootMarker, () => `<div id="root">${markup}</div>`)
   return body.replace(headPattern, (_, open, head, close) => {
-    const tags = [`<meta name="rea-site-origin" content="${escapeMarkup(SITE_ORIGIN)}" />`]
+    head = head.replace(/[ \t]*<meta\b(?=[^>]*\s(?:property=["']og:image["']|name=["']twitter:image["']))[^>]*>[ \t]*\r?\n?/gi, "")
+    const safeImage = escapeMarkup(image)
+    const tags = [
+      `<meta name="rea-site-origin" content="${escapeMarkup(SITE_ORIGIN)}" />`,
+      `<link rel="preload" href="/assets/${escapeMarkup(latinFont)}" as="font" type="font/woff2" crossorigin />`,
+      `<meta property="og:image" content="${safeImage}" />`,
+      `<meta name="twitter:image" content="${safeImage}" />`,
+    ]
     if (title) {
       head = head
         .replace(/[ \t]*<title\b[^>]*>[\s\S]*?<\/title>[ \t]*\r?\n?/gi, "")
@@ -214,6 +229,7 @@ const pages = [
     name: flagship.title,
     description: flagship.subtitle,
     url: HOME,
+    image: postImage(flagship),
     entity: { ...blogPosting(flagship), mainEntityOfPage: HOME },
     post: flagship,
   },
@@ -227,6 +243,7 @@ const pages = [
   ...posts.map((post) => ({
     ...page(post.path, post.title, post.subtitle, "BlogPosting"),
     ogType: "article",
+    image: postImage(post),
     entity: blogPosting(post),
     post,
   })),
@@ -238,6 +255,8 @@ function write(relativeFile, contents) {
   mkdirSync(dirname(output), { recursive: true })
   writeFileSync(output, contents, "utf8")
 }
+
+generateOgAssets(DIST, posts)
 
 const markdown = new Map()
 const turndown = new TurndownService({ headingStyle: "atx", codeBlockStyle: "fenced" })

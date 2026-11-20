@@ -1,11 +1,16 @@
 import assert from "node:assert/strict"
 import { createHash } from "node:crypto"
-import { readFileSync } from "node:fs"
+import { readFileSync, statSync } from "node:fs"
 import { join } from "node:path"
 import { JSDOM } from "jsdom"
 import { SITE_NAME, SITE_ORIGIN } from "../src/lib/site.ts"
 
 const read = (path) => readFileSync(join("dist", path), "utf8")
+const pngMagic = Buffer.from("89504e470d0a1a0a", "hex")
+const assertPng = (path) => {
+  const bytes = readFileSync(join("dist", path))
+  assert.deepEqual(bytes.subarray(0, pngMagic.length), pngMagic, `dist/${path} must start with the PNG signature`)
+}
 const origin = new URL(SITE_ORIGIN)
 const parse = (body, contentType = "text/html") => new JSDOM(body, { contentType }).window.document
 const localPath = (url) => {
@@ -13,6 +18,10 @@ const localPath = (url) => {
   assert.equal(target.origin, origin.origin, `${url} is not a same-site resource`)
   return target.pathname.slice(1)
 }
+
+assertPng("apple-touch-icon.png")
+assert.doesNotThrow(() => JSON.parse(read("manifest.webmanifest")), "dist/manifest.webmanifest must be valid JSON")
+assert.ok(statSync(join("dist", "theme-init.js")).isFile(), "dist/theme-init.js must be a file")
 
 const sitemap = parse(read("sitemap.xml"), "text/xml")
 const urls = sitemap.querySelectorAll("url")
@@ -25,8 +34,25 @@ for (const entry of urls) {
   const html = parse(read(path ? `${path}/index.html` : "index.html"))
   assert.equal(html.querySelector('link[rel="canonical"]').href, url)
   assert.equal(html.querySelector('meta[name="rea-site-origin"]').content, SITE_ORIGIN)
+  const slug = path === "" ? "evidence-first-ui" : path.startsWith("posts/") ? path.slice("posts/".length) : null
+  const imagePath = slug ? `og/${slug}.png` : "og-image.png"
+  if (slug) assertPng(imagePath)
   for (const selector of ['meta[property="og:image"]', 'meta[name="twitter:image"]']) {
-    assert.equal(html.querySelector(selector).content, `${SITE_ORIGIN}/og-image.png`)
+    assert.equal(html.querySelector(selector)?.content, `${SITE_ORIGIN}/${imagePath}`, `Incorrect ${selector} for ${url}`)
+  }
+  const fontPreloads = html.querySelectorAll('link[rel="preload"][as="font"][type="font/woff2"][href]')
+  assert.ok(fontPreloads.length > 0, `Missing WOFF2 font preload for ${url}`)
+  for (const preload of fontPreloads) {
+    const fontPath = localPath(new URL(preload.getAttribute("href"), url))
+    assert.match(fontPath, /^assets\/.+\.woff2$/, `Font preload for ${url} must point to a WOFF2 file in dist/assets/`)
+    assert.ok(statSync(join("dist", fontPath)).isFile(), `Font preload for ${url} must point to a file`)
+  }
+  for (const selector of [
+    'link[rel="apple-touch-icon"][href="/apple-touch-icon.png"]',
+    'link[rel="manifest"][href="/manifest.webmanifest"]',
+    'script[src="/theme-init.js"]',
+  ]) {
+    assert.ok(html.querySelector(selector), `Missing ${selector} for ${url}`)
   }
   const main = html.querySelector("#root main")
   assert.ok(main.textContent.trim().length >= 500, `${path || "/"} needs meaningful raw HTML`)

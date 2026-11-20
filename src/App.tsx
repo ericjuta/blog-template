@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react"
 import type { MouseEvent, ReactNode } from "react"
+import { Monitor, Moon, Sun } from "lucide-react"
 import {
   Collapsible,
   CollapsiblePanel,
@@ -23,6 +24,7 @@ import { ErrorBoundary } from "./components/ErrorBoundary"
 import { getBlogAgent } from "./lib/blog-agent"
 import { routeToPath, useAppRoute } from "./lib/router"
 import type { AppRoute } from "./lib/router"
+import { cycleTheme, useTheme } from "./lib/theme"
 
 const DesignSystemGallery = lazy(() =>
   import("./components/DesignSystemGallery").then((module) => ({ default: module.DesignSystemGallery }))
@@ -45,6 +47,12 @@ const NotionIpcFigure = lazy(() =>
 const AgentEnvFigure = lazy(() =>
   import("./components/AgentEnvFigure").then((module) => ({ default: module.AgentEnvFigure }))
 )
+
+const THEME_OPTIONS = {
+  system: { label: "System", Icon: Monitor },
+  light: { label: "Light", Icon: Sun },
+  dark: { label: "Dark", Icon: Moon },
+}
 
 type CategoryFilter = "All" | PostCategory
 
@@ -74,6 +82,8 @@ function LazyFigure({
 
 export function App({ initialRoute }: { initialRoute?: AppRoute }) {
   const { route, navigate } = useAppRoute(initialRoute)
+  const { theme, cycle } = useTheme()
+  const { label: themeLabel, Icon: ThemeIcon } = THEME_OPTIONS[theme]
   const [category, setCategory] = useState<CategoryFilter>("All")
   const [consoleOpen, setConsoleOpen] = useState(false)
   const [activeToc, setActiveToc] = useState<string>(REPORT_TOC[0]?.id ?? "dx-ball-trace")
@@ -176,6 +186,15 @@ export function App({ initialRoute }: { initialRoute?: AppRoute }) {
               onClick={() => setConsoleOpen(true)}
             >
               Agent Console
+            </button>
+            <button
+              type="button"
+              className="btn btn-sm theme-toggle"
+              aria-label={`Theme: ${themeLabel} (click for ${cycleTheme(theme)})`}
+              onClick={cycle}
+            >
+              <ThemeIcon size={14} aria-hidden="true" />
+              {themeLabel}
             </button>
           </nav>
         </div>

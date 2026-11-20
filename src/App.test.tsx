@@ -22,6 +22,53 @@ describe("DX-Ball pan oracle", () => {
 })
 
 describe("REA Research Blog interactive UX", () => {
+  it("cycles the header theme through system, light, dark, and back to system", async () => {
+    const user = userEvent.setup()
+    const { dataset } = document.documentElement
+    // Stub a clean Storage implementation so Node 26's unconfigured --localstorage-file does not interfere.
+    const store = new Map<string, string>()
+    const storage: Storage = {
+      get length() {
+        return store.size
+      },
+      clear() {
+        store.clear()
+      },
+      getItem(key) {
+        return store.get(key) ?? null
+      },
+      key(index) {
+        return [...store.keys()].at(index) ?? null
+      },
+      removeItem(key) {
+        store.delete(key)
+      },
+      setItem(key, value) {
+        store.set(key, String(value))
+      },
+    }
+    const storageKey = "rea-theme"
+    vi.stubGlobal("localStorage", storage)
+    storage.removeItem(storageKey)
+    delete dataset.theme
+    try {
+      render(<App />)
+      const header = screen.getByRole("banner")
+      expect(dataset.theme).toBeUndefined()
+      expect(storage.getItem(storageKey)).toBeNull()
+
+      for (const theme of ["light", "dark", undefined]) {
+        await user.click(within(header).getByRole("button", { name: /theme/i }))
+        expect(dataset.theme).toBe(theme)
+        expect(storage.getItem(storageKey)).toBe(theme ?? null)
+      }
+    } finally {
+      storage.removeItem(storageKey)
+      delete dataset.theme
+      vi.unstubAllGlobals()
+    }
+  })
+
   it("steps through DX-Ball reconstruction via EvidenceStepper and buttons", async () => {
     const user = userEvent.setup()
     render(<App />)

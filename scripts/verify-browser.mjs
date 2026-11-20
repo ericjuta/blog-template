@@ -236,10 +236,33 @@ async function auditRoute(browser, origin, axePath, route, viewport, colorScheme
 
 const INTERACTIVE_CHECKS = [
   ["Self-hosted Geist font", async (page) => {
+    assert.ok(await page.evaluate(() => Boolean(document.querySelector('link[rel="preload"][as="font"]'))),
+      "Expected a font preload on /")
     const families = await page.evaluate(() => Array.from(document.fonts, ({ family }) => family))
     // Fontsource registers the Geist variable face as "Geist Variable".
     assert.ok(families.some((family) => /^Geist(?: Variable)?$/.test(family.replace(/["']/g, ""))),
       `Expected Geist in document.fonts, got: ${[...new Set(families)].join(", ") || "none"}`)
+  }],
+  ["Header theme cycles through light, dark, and system", async (page) => {
+    const toggle = page.getByRole("banner").getByRole("button", { name: /theme/i })
+    const readTheme = () => page.evaluate(() => ({
+      theme: document.documentElement.dataset.theme,
+      background: getComputedStyle(document.body).backgroundColor,
+    }))
+    const light = "rgb(255, 255, 255)"
+    const dark = "rgb(10, 10, 10)"
+
+    assert.deepEqual(await readTheme(), { theme: undefined, background: light }, "Expected the initial system light theme")
+    // Use a dark OS preference so the explicit light override must actually change the palette.
+    await page.emulateMedia({ colorScheme: "dark" })
+    assert.deepEqual(await readTheme(), { theme: undefined, background: dark }, "System theme should follow the OS")
+    await toggle.click()
+    assert.deepEqual(await readTheme(), { theme: "light", background: light })
+    await page.emulateMedia({ colorScheme: "light" })
+    await toggle.click()
+    assert.deepEqual(await readTheme(), { theme: "dark", background: dark })
+    await toggle.click()
+    assert.deepEqual(await readTheme(), { theme: undefined, background: light }, "System mode must clear data-theme")
   }],
   ["DX-Ball EvidenceStepper ArrowRight", async (page) => {
     const steps = page.locator('[aria-label="DX-Ball reconstruction evidence steps"]').getByRole("button")

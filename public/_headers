@@ -16,6 +16,18 @@
 /og-image.png
   Cache-Control: public, max-age=86400
 
+/og/*
+  Cache-Control: public, max-age=86400
+
+/apple-touch-icon.png
+  Cache-Control: public, max-age=86400
+
+/manifest.webmanifest
+  Cache-Control: public, max-age=86400
+
+/theme-init.js
+  Cache-Control: public, max-age=86400
+
 /
   Link: </index.md>; rel="alternate"; type="text/markdown", </llms.txt>; rel="describedby", </.well-known/ard.json>; rel="ard"
 
