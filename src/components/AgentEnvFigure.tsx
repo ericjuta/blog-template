@@ -163,7 +163,7 @@ export function AgentEnvFigure() {
               {strictDeterminism ? "deterministic" : "passthrough"}
             </span>
           </div>
-          <pre style={{ margin: 0, padding: "0.9rem 1rem", overflowX: "auto", fontSize: "0.82rem", color: "#e2e8f0" }}>
+          <pre style={{ margin: 0, padding: "0.9rem 1rem", overflowX: "auto", fontSize: "0.82rem", color: "var(--ink-code)" }}>
             <code>{current.samplePayload}</code>
           </pre>
         </div>

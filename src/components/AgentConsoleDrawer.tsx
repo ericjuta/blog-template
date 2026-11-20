@@ -156,7 +156,7 @@ export function AgentConsoleDrawer({
                 padding: "0.85rem",
                 borderRadius: "var(--radius-sm)",
                 background: "var(--warn-soft)",
-                border: "1px solid #f59e0b",
+                border: "1px solid var(--warn-border)",
                 fontSize: "0.84rem",
               }}
             >
@@ -263,7 +263,7 @@ export function AgentConsoleDrawer({
                     padding: "0.55rem 0.7rem",
                     borderRadius: "var(--radius-sm)",
                     border: "1px solid var(--border)",
-                    background: "#ffffff",
+                    background: "var(--bg-card)",
                     fontSize: "0.78rem",
                   }}
                 >

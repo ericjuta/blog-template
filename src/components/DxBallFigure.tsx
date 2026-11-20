@@ -150,7 +150,7 @@ export function DxBallFigure() {
             padding: "0.9rem 1rem",
             borderRadius: "var(--radius-sm)",
             border: "1px solid var(--border)",
-            background: "#ffffff",
+            background: "var(--bg-subtle)",
           }}
         >
           <div

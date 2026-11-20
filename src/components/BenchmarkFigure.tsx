@@ -178,7 +178,7 @@ export function BenchmarkFigure() {
                     <div
                       style={{
                         height: "14px",
-                        background: "#e2e8f0",
+                        background: "var(--bar-track-muted)",
                         borderRadius: "3px",
                         overflow: "hidden",
                       }}
@@ -187,7 +187,7 @@ export function BenchmarkFigure() {
                         style={{
                           width: `${scaleWidth(baseVal)}%`,
                           height: "100%",
-                          background: "#64748b",
+                          background: "var(--bar-fill-muted)",
                           borderRadius: "3px",
                           transition: "width 200ms ease",
                         }}
@@ -213,7 +213,7 @@ export function BenchmarkFigure() {
                     <div
                       style={{
                         height: "14px",
-                        background: "#dbeafe",
+                        background: "var(--bar-track-accent)",
                         borderRadius: "3px",
                         overflow: "hidden",
                       }}
