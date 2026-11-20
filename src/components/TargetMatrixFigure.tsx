@@ -45,7 +45,7 @@ export function TargetMatrixFigure() {
     <figure className="figure-card" aria-labelledby="fig-matrix-title">
       <div className="figure-header">
         <div>
-          <div className="figure-label">Figure 3 · Capability Matrix &amp; Trace</div>
+          <div className="figure-label">Figure 4 · Capability Matrix &amp; Trace</div>
           <h3 id="fig-matrix-title" className="figure-title">
             REA Target Surface &amp; Investigation Span Waterfall
           </h3>
@@ -137,12 +137,13 @@ export function TargetMatrixFigure() {
           <Waterfall
             aria-label="DX-Ball REA investigation trace waterfall"
             items={INVESTIGATION_SPANS}
+            defaultExpanded={["session"]}
             value={selectedSpan}
             onValueChange={(next) => {
               if (next) setSelectedSpan(next)
             }}
           >
-            {INVESTIGATION_SPANS.map((span) => (
+            {INVESTIGATION_SPANS.flatMap((span) => [span, ...(span.children ?? [])]).map((span) => (
               <WaterfallRow key={span.value} value={span.value}>
                 <WaterfallRowHeader>{span.label}</WaterfallRowHeader>
                 <div className="waterfall-track">

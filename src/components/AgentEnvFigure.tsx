@@ -140,24 +140,24 @@ export function AgentEnvFigure() {
         <p style={{ margin: "0 0 0.9rem", color: "var(--ink-secondary)" }}>{current.summary}</p>
 
         <div className="env-meta-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "0.75rem", marginBottom: "1rem" }}>
-          <div className="metric-tile" style={{ padding: "0.75rem", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--surface)" }}>
-            <div className="mono" style={{ fontSize: "0.72rem", color: "var(--muted)" }}>INPUT</div>
+          <div className="metric-tile" style={{ padding: "0.75rem", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-subtle)" }}>
+            <div className="mono" style={{ fontSize: "0.72rem", color: "var(--ink-muted)" }}>INPUT</div>
             <div style={{ fontSize: "0.88rem", marginTop: "0.2rem" }}>{current.inputShape}</div>
           </div>
-          <div className="metric-tile" style={{ padding: "0.75rem", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--surface)" }}>
-            <div className="mono" style={{ fontSize: "0.72rem", color: "var(--muted)" }}>OUTPUT</div>
+          <div className="metric-tile" style={{ padding: "0.75rem", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-subtle)" }}>
+            <div className="mono" style={{ fontSize: "0.72rem", color: "var(--ink-muted)" }}>OUTPUT</div>
             <div style={{ fontSize: "0.88rem", marginTop: "0.2rem" }}>{current.outputShape}</div>
           </div>
-          <div className="metric-tile" style={{ padding: "0.75rem", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--surface)" }}>
-            <div className="mono" style={{ fontSize: "0.72rem", color: "var(--muted)" }}>SIDE EFFECTS</div>
-            <div style={{ fontSize: "0.88rem", marginTop: "0.2rem", color: strictDeterminism ? "var(--accent)" : "var(--ink)" }}>
+          <div className="metric-tile" style={{ padding: "0.75rem", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-subtle)" }}>
+            <div className="mono" style={{ fontSize: "0.72rem", color: "var(--ink-muted)" }}>SIDE EFFECTS</div>
+            <div style={{ fontSize: "0.88rem", marginTop: "0.2rem", color: strictDeterminism ? "var(--accent-ink)" : "var(--ink)" }}>
               {strictDeterminism ? current.sideEffects : "Live passthrough enabled (unsafe for RL)"}
             </div>
           </div>
         </div>
 
         <div className="code-pane">
-          <div className="code-pane-header">
+          <div className="code-pane-head">
             <span className="mono">{current.command}</span>
             <span className="pill-badge pill-badge-neutral">
               {strictDeterminism ? "deterministic" : "passthrough"}

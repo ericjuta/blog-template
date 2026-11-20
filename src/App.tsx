@@ -91,21 +91,6 @@ export function App() {
 
   return (
     <div>
-      {activePost !== null && (
-        <div
-          className="reading-progress-track"
-          role="progressbar"
-          aria-label="Reading progress"
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-valuenow={Math.round(readProgress)}
-        >
-          <div
-            className="reading-progress-fill"
-            style={{ width: `${readProgress}%` }}
-          />
-        </div>
-      )}
       <header className="site-header">
         <div className="site-header-inner">
           <a
@@ -147,6 +132,21 @@ export function App() {
             </button>
           </nav>
         </div>
+        {activePost !== null && (
+          <div
+            className="reading-progress-track"
+            role="progressbar"
+            aria-label="Reading progress"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={Math.round(readProgress)}
+          >
+            <div
+              className="reading-progress-fill"
+              style={{ width: `${readProgress}%` }}
+            />
+          </div>
+        )}
       </header>
 
       <main id="top">
@@ -383,9 +383,6 @@ export function App() {
                     <Collapsible className="collapsible-box">
                       <CollapsibleTrigger className="collapsible-trigger">
                         <span>Methodology note: 3-run median benchmark details</span>
-                        <span className="mono" style={{ fontSize: "0.78rem" }}>
-                          Toggle
-                        </span>
                       </CollapsibleTrigger>
                       <CollapsiblePanel>
                         <div className="collapsible-panel-inner">

@@ -9,7 +9,7 @@ export function NotionIpcFigure() {
     <figure className="figure-card" aria-labelledby="fig-notion-title">
       <div className="figure-header">
         <div>
-          <div className="figure-label">Figure 4 · Electron Trust Boundary</div>
+          <div className="figure-label">Figure 3 · Electron Trust Boundary</div>
           <h3 id="fig-notion-title" className="figure-title">
             Notion Desktop 7.6.1 Clipboard Write IPC Chain
           </h3>
