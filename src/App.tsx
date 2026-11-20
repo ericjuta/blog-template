@@ -24,9 +24,17 @@ import { TargetMatrixFigure } from "./components/TargetMatrixFigure"
 import { NotionIpcFigure } from "./components/NotionIpcFigure"
 import { AgentEnvFigure } from "./components/AgentEnvFigure"
 import { AgentConsoleDrawer } from "./components/AgentConsoleDrawer"
+import { Citation, SidenotesRail } from "./components/Citation"
 import { getBlogAgent } from "./lib/blog-agent"
 
 type CategoryFilter = "All" | PostCategory
+
+const POST_CITATIONS: Record<PostSlug, number[]> = {
+  "evidence-first-ui": [1, 2, 3, 4, 5],
+  "dx-ball-sound-pan": [2, 3, 1],
+  "notion-clipboard-bridge": [2, 4, 1],
+  "agent-environments": [2, 1, 5],
+}
 
 export function App() {
   const [activePost, setActivePost] = useState<PostSlug | null>(
@@ -35,6 +43,8 @@ export function App() {
   const [category, setCategory] = useState<CategoryFilter>("All")
   const [consoleOpen, setConsoleOpen] = useState(false)
   const [activeToc, setActiveToc] = useState<string>(REPORT_TOC[0]?.id ?? "dx-ball-trace")
+  const [highlightedCitation, setHighlightedCitation] = useState<number | null>(null)
+  const [readProgress, setReadProgress] = useState(0)
 
   useEffect(() => {
     getBlogAgent()
@@ -47,13 +57,65 @@ export function App() {
 
   const currentPost = BLOG_POSTS.find((p) => p.slug === activePost) ?? featured
   const currentToc = POST_TOCS[currentPost.slug] ?? REPORT_TOC
+  const currentCitations = POST_CITATIONS[currentPost.slug] ?? [1, 2, 3, 4, 5]
 
   useEffect(() => {
     setActiveToc(currentToc[0]?.id ?? "dx-ball-trace")
-  }, [currentPost.slug])
+    setHighlightedCitation(null)
+    setReadProgress(0)
+  }, [currentPost.slug, activePost])
+
+  useEffect(() => {
+    if (activePost === null) {
+      setReadProgress(0)
+      return
+    }
+
+    const handleScroll = () => {
+      const docEl = document.documentElement
+      const scrollable = Math.max(1, docEl.scrollHeight - window.innerHeight)
+      const pct = Math.min(100, Math.max(0, (window.scrollY / scrollable) * 100))
+      setReadProgress(pct)
+
+      const offset = 120
+      let currentId = currentToc[0]?.id ?? ""
+      for (const item of currentToc) {
+        const el = document.getElementById(item.id)
+        if (el && el.getBoundingClientRect().top <= offset) {
+          currentId = item.id
+        }
+      }
+      if (currentId) {
+        setActiveToc(currentId)
+      }
+    }
+
+    handleScroll()
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    window.addEventListener("resize", handleScroll, { passive: true })
+    return () => {
+      window.removeEventListener("scroll", handleScroll)
+      window.removeEventListener("resize", handleScroll)
+    }
+  }, [activePost, currentToc])
 
   return (
     <div>
+      {activePost !== null && (
+        <div
+          className="reading-progress-track"
+          role="progressbar"
+          aria-label="Reading progress"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(readProgress)}
+        >
+          <div
+            className="reading-progress-fill"
+            style={{ width: `${readProgress}%` }}
+          />
+        </div>
+      )}
       <header className="site-header">
         <div className="site-header-inner">
           <a
@@ -275,7 +337,10 @@ export function App() {
                     <strong>Abstract.</strong> Reverse engineering produces graphs of
                     disassembly, memory reads, IPC hops, and residual unknowns. Static blog
                     prose flattens that structure. By pairing REA’s evidence-backed analysis
-                    model with Vercel UI SDK’s accessible, agent-addressable primitives, every
+                    model
+                    <Citation num={2} highlightedNum={highlightedCitation} onHighlight={setHighlightedCitation} />{" "}
+                    with Vercel UI SDK’s accessible, agent-addressable primitives
+                    <Citation num={1} highlightedNum={highlightedCitation} onHighlight={setHighlightedCitation} />, every
                     figure in this report becomes an inspectable instrument for both human
                     readers and coding agents.
                   </div>
@@ -283,7 +348,8 @@ export function App() {
                   <section id="dx-ball-trace" className="article-section">
                     <h2>Case I: DX-Ball Sound-Panning Reconstruction</h2>
                     <p>
-                      In the DX-Ball showcase, REA traces the x86 DirectSound pan routine at{" "}
+                      In the DX-Ball showcase
+                      <Citation num={3} highlightedNum={highlightedCitation} onHighlight={setHighlightedCitation} />, REA traces the x86 DirectSound pan routine at{" "}
                       <code>0x406409</code> through five evidence-backed steps—loading the
                       ball’s horizontal coordinate, multiplying by <code>1.5625</code>,
                       subtracting <code>500.0</code>, scaling, and truncating via{" "}
@@ -297,7 +363,8 @@ export function App() {
                     <h2>Why Headless + Agent-Ready Matters</h2>
                     <p>
                       Vercel UI SDK separates interaction state, roving focus, and ARIA
-                      semantics from visual styling. Because every control registers with{" "}
+                      semantics from visual styling
+                      <Citation num={1} highlightedNum={highlightedCitation} onHighlight={setHighlightedCitation} />. Because every control registers with{" "}
                       <code>createAgent()</code>, an agent can inspect and drive the exact same
                       figures a human reader uses—cutting token consumption and tool calls
                       compared to raw browser automation.
@@ -327,9 +394,10 @@ export function App() {
                     <h2>Case II: Notion Desktop 7.6.1 Clipboard IPC Bridge</h2>
                     <p>
                       Static JavaScript analysis in REA does not require a native disassembler.
-                      Inspecting Notion Desktop’s <code>app.asar</code> maps the full trust
-                      boundary from renderer preload wrappers to the sender-checked{" "}
-                      <code>ipcMain.handle</code> clipboard sink.
+                      Inspecting Notion Desktop’s <code>app.asar</code>
+                      <Citation num={4} highlightedNum={highlightedCitation} onHighlight={setHighlightedCitation} />{" "}
+                      maps the full trust boundary from renderer preload wrappers to the
+                      sender-checked <code>ipcMain.handle</code> clipboard sink.
                     </p>
                     <NotionIpcFigure />
                   </section>
@@ -338,8 +406,10 @@ export function App() {
                     <h2>Target Capability Matrix &amp; Investigation Trace</h2>
                     <p>
                       REA routes each artifact to a specialized static reader, bring-your-own
-                      disassembler, or live runtime bridge. Filter the target matrix by engine
-                      requirement and inspect the 940 ms DX-Ball investigation waterfall below.
+                      disassembler, or live runtime bridge
+                      <Citation num={2} highlightedNum={highlightedCitation} onHighlight={setHighlightedCitation} />. Filter the target matrix by engine
+                      requirement and inspect the 940 ms DX-Ball investigation waterfall below
+                      <Citation num={5} highlightedNum={highlightedCitation} onHighlight={setHighlightedCitation} />.
                     </p>
                     <TargetMatrixFigure />
                   </section>
@@ -458,6 +528,12 @@ export function App() {
                 </ol>
               </section>
             </article>
+
+            <SidenotesRail
+              nums={currentCitations}
+              highlightedNum={highlightedCitation}
+              onHighlight={setHighlightedCitation}
+            />
           </div>
         )}
       </main>

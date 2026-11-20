@@ -118,4 +118,17 @@ describe("REA Research Blog interactive UX", () => {
     await user.click(screen.getByRole("radio", { name: /2\. Compile/i }))
     expect(screen.getByText(/routes_synthesized/i)).toBeTruthy()
   })
+
+  it("renders RHS sidenotes rail, reading progress bar, and opens inline citation popover", async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    expect(screen.getByRole("progressbar", { name: /Reading progress/i })).toBeTruthy()
+    const rail = screen.getByRole("complementary", { name: /Margin citations/i })
+    expect(within(rail).getByText(/github\.com\/vercel-labs\/ui/i)).toBeTruthy()
+
+    const citeBtn = screen.getAllByRole("button", { name: /Citation 3:/i })[0]
+    await user.click(citeBtn)
+    expect(screen.getByText(/Reference \[3\]/i)).toBeTruthy()
+  })
 })
