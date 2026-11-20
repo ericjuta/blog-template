@@ -175,7 +175,12 @@ export function DxBallFigure() {
             max={640}
             step={1}
             value={xPos}
-            onValueChange={(next) => setXPos(Array.isArray(next) ? next[0] : next)}
+            onValueChange={(next: number | Array<number>) => {
+              const value = Array.isArray(next) ? next[0] : next
+              if (typeof value === "number") {
+                setXPos(value)
+              }
+            }}
             aria-label="DX-Ball horizontal X coordinate in pixels"
           >
             <SliderControl>

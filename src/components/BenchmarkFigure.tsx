@@ -5,11 +5,8 @@ import {
   SegmentedControlItem,
 } from "@ui-sdk/react/segmented-control"
 import { Switch, SwitchThumb } from "@ui-sdk/react/switch"
-import {
-  UI_SDK_BENCHMARKS,
-  type BenchmarkMetricKey,
-  type BenchmarkRow,
-} from "../data/blog-data"
+import { UI_SDK_BENCHMARKS } from '../data/blog-data';
+import type { BenchmarkMetricKey, BenchmarkRow } from '../data/blog-data';
 
 const METRIC_META: Record<
   BenchmarkMetricKey,
@@ -81,7 +78,11 @@ export function BenchmarkFigure() {
         <SegmentedControl
           aria-label="Benchmark metric selector"
           value={metric}
-          onValueChange={(v) => setMetric(v as BenchmarkMetricKey)}
+          onValueChange={(v) => {
+            if (v !== null) {
+              setMetric(v)
+            }
+          }}
         >
           <SegmentedControlIndicator />
           <SegmentedControlItem value="tokensK">Tokens</SegmentedControlItem>

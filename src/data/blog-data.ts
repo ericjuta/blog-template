@@ -17,10 +17,10 @@ export type BlogPostMeta = {
   authors: string
   featured?: boolean
   artwork: "moire" | "silicon" | "ipc" | "env"
-  metrics: { label: string; value: string }[]
+  metrics: Array<{ label: string; value: string }>
 }
 
-export const BLOG_POSTS: BlogPostMeta[] = [
+export const BLOG_POSTS: Array<BlogPostMeta> = [
   {
     slug: "evidence-first-ui",
     category: "Technical report",
@@ -102,7 +102,7 @@ export type TocSection = {
   level: 2 | 3
 }
 
-export const REPORT_TOC: TocSection[] = [
+export const REPORT_TOC: Array<TocSection> = [
   { id: "dx-ball-trace", label: "Case I: DX-Ball x86 → C", level: 2 },
   { id: "agent-bridge", label: "Headless + Agent-Ready", level: 2 },
   { id: "notion-ipc", label: "Case II: Notion IPC bridge", level: 2 },
@@ -110,7 +110,7 @@ export const REPORT_TOC: TocSection[] = [
   { id: "references", label: "Notes & references", level: 2 },
 ]
 
-export const POST_TOCS: Record<PostSlug, TocSection[]> = {
+export const POST_TOCS: Record<PostSlug, Array<TocSection>> = {
   "evidence-first-ui": REPORT_TOC,
   "dx-ball-sound-pan": [
     { id: "dx-abstract", label: "Abstract", level: 2 },
@@ -163,7 +163,7 @@ export type BenchmarkRow = {
   }
 }
 
-export const UI_SDK_BENCHMARKS: BenchmarkRow[] = [
+export const UI_SDK_BENCHMARKS: Array<BenchmarkRow> = [
   {
     framework: "react",
     frameworkLabel: "React",
@@ -236,8 +236,8 @@ export type DxBallStep = {
   title: string
   reaTool: string
   reaQuery: string
-  asmLines: number[]
-  cLines: number[]
+  asmLines: Array<number>
+  cLines: Array<number>
   explanation: string
   evidenceId: string
   decodedConstant?: string
@@ -264,7 +264,7 @@ export const DXBALL_C = [
   "}",
 ]
 
-export const DXBALL_STEPS: DxBallStep[] = [
+export const DXBALL_STEPS: Array<DxBallStep> = [
   {
     id: "step-01",
     number: "01",
@@ -341,7 +341,7 @@ export type NotionHop = {
   code: string
 }
 
-export const NOTION_HOPS: NotionHop[] = [
+export const NOTION_HOPS: Array<NotionHop> = [
   {
     id: "page-api",
     stage: "01 · Page-facing API",
@@ -402,7 +402,7 @@ export type TargetRow = {
   prerequisite: string
 }
 
-export const REA_TARGETS: TargetRow[] = [
+export const REA_TARGETS: Array<TargetRow> = [
   {
     id: "native-bins",
     target: "Native binaries (ELF / Mach-O / PE / DOS)",
@@ -542,14 +542,14 @@ export const INVESTIGATION_SPANS = [
   },
 ]
 
-export const INVESTIGATION_META: Record<string, { phase: string; note: string }> = {
+export const INVESTIGATION_META = {
   session: { phase: "End-to-end", note: "940 ms total" },
   open: { phase: "Bind", note: "SHA-256 pinned" },
   "fn-pan": { phase: "Static", note: "Revealed [EBP+8]" },
   "fn-caller": { phase: "Static", note: "Brick hit caller" },
   "read-mem": { phase: "Data", note: "3 IEEE doubles" },
   "ui-act": { phase: "UI SDK", note: "7 tool calls total" },
-}
+} satisfies Record<string, { phase: string; note: string }>
 
 export const REFERENCES = [
   {

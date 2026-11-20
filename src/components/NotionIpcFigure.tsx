@@ -23,7 +23,7 @@ export function NotionIpcFigure() {
         <Tabs
           value={hopId}
           onValueChange={(next) => {
-            if (next) setHopId(next)
+            if (next) {setHopId(next)}
           }}
         >
           <TabsList aria-label="Notion Desktop clipboard IPC hops">

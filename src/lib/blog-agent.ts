@@ -28,18 +28,18 @@ type AgentListener = () => void
 let pendingResolver: ((allowed: boolean) => void) | null = null
 let pendingPrompt: PendingPrompt | null = null
 const listeners = new Set<AgentListener>()
-const history: AgentEvent[] = []
+const history: Array<AgentEvent> = []
 let seq = 0
 
 function emit() {
-  for (const listener of listeners) listener()
+  for (const listener of listeners) {listener()}
 }
 
 function recordEvent(event: Omit<AgentEvent, "id" | "time">) {
   seq += 1
   const time = new Date().toTimeString().slice(0, 8)
   history.unshift({ ...event, id: `ev-${seq}`, time })
-  if (history.length > 30) history.length = 30
+  if (history.length > 30) {history.length = 30}
   emit()
 }
 
@@ -81,7 +81,7 @@ function getBlogAgent(): BlogAgent {
   if (!sharedAgent) {
     sharedAgent = createAgent({
       allow: (step) => {
-        if (!step.confirm) return true
+        if (!step.confirm) {return true}
         return requestConfirmation(
           step.confirm,
           String(step.ref),

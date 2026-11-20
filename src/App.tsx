@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"
+import { lazy, Suspense, useEffect, useState } from "react"
+import type { ReactNode } from "react"
 import {
   Collapsible,
   CollapsiblePanel,
@@ -14,28 +15,64 @@ import {
   POST_TOCS,
   REFERENCES,
   REPORT_TOC,
-  type PostCategory,
-  type PostSlug,
 } from "./data/blog-data"
-import { CoverArtwork } from "./components/CoverArtwork"
-import { DxBallFigure } from "./components/DxBallFigure"
-import { BenchmarkFigure } from "./components/BenchmarkFigure"
-import { TargetMatrixFigure } from "./components/TargetMatrixFigure"
-import { NotionIpcFigure } from "./components/NotionIpcFigure"
-import { AgentEnvFigure } from "./components/AgentEnvFigure"
-import { AgentConsoleDrawer } from "./components/AgentConsoleDrawer"
+import type { PostCategory, PostSlug } from "./data/blog-data"
 import { Sidenote } from "./components/Citation"
-import { DesignSystemGallery } from "./components/DesignSystemGallery"
+import { CoverArtwork } from "./components/CoverArtwork"
+import { ErrorBoundary } from "./components/ErrorBoundary"
 import { getBlogAgent } from "./lib/blog-agent"
+import { useAppRoute } from "./lib/router"
+
+const DesignSystemGallery = lazy(() =>
+  import("./components/DesignSystemGallery").then((module) => ({ default: module.DesignSystemGallery }))
+)
+const AgentConsoleDrawer = lazy(() =>
+  import("./components/AgentConsoleDrawer").then((module) => ({ default: module.AgentConsoleDrawer }))
+)
+const DxBallFigure = lazy(() =>
+  import("./components/DxBallFigure").then((module) => ({ default: module.DxBallFigure }))
+)
+const BenchmarkFigure = lazy(() =>
+  import("./components/BenchmarkFigure").then((module) => ({ default: module.BenchmarkFigure }))
+)
+const TargetMatrixFigure = lazy(() =>
+  import("./components/TargetMatrixFigure").then((module) => ({ default: module.TargetMatrixFigure }))
+)
+const NotionIpcFigure = lazy(() =>
+  import("./components/NotionIpcFigure").then((module) => ({ default: module.NotionIpcFigure }))
+)
+const AgentEnvFigure = lazy(() =>
+  import("./components/AgentEnvFigure").then((module) => ({ default: module.AgentEnvFigure }))
+)
 
 type CategoryFilter = "All" | PostCategory
 
-export function App() {
-  const [activePost, setActivePost] = useState<PostSlug | "__design-system__" | null>(() =>
-    typeof window !== "undefined" && window.location.hash === "#design-system"
-      ? "__design-system__"
-      : "evidence-first-ui"
+function LazyFigure({
+  title,
+  slug,
+  children,
+}: {
+  title: string
+  slug: PostSlug
+  children: ReactNode
+}) {
+  return (
+    <ErrorBoundary scope="figure" label={title} resetKey={slug}>
+      <Suspense
+        fallback={
+          <div className="figure-skeleton" role="status" aria-live="polite">
+            Loading interactive figure...
+          </div>
+        }
+      >
+        {children}
+      </Suspense>
+    </ErrorBoundary>
   )
+}
+
+export function App() {
+  const { route, navigate } = useAppRoute()
   const [category, setCategory] = useState<CategoryFilter>("All")
   const [consoleOpen, setConsoleOpen] = useState(false)
   const [activeToc, setActiveToc] = useState<string>(REPORT_TOC[0]?.id ?? "dx-ball-trace")
@@ -50,17 +87,13 @@ export function App() {
     category === "All" ? true : p.category === category
   )
 
-  const currentPost = BLOG_POSTS.find((p) => p.slug === activePost) ?? featured
+  const currentPost = route.kind === "post"
+    ? BLOG_POSTS.find((p) => p.slug === route.slug) ?? featured
+    : featured
   const currentToc = POST_TOCS[currentPost.slug] ?? REPORT_TOC
 
   useEffect(() => {
-    setActiveToc(currentToc[0]?.id ?? "dx-ball-trace")
-    setReadProgress(0)
-  }, [currentPost.slug, activePost])
-
-  useEffect(() => {
-    if (activePost === null) {
-      setReadProgress(0)
+    if (route.kind !== "post") {
       return
     }
 
@@ -90,7 +123,7 @@ export function App() {
       window.removeEventListener("scroll", handleScroll)
       window.removeEventListener("resize", handleScroll)
     }
-  }, [activePost, currentToc])
+  }, [route.kind, currentToc])
 
   return (
     <div>
@@ -100,12 +133,11 @@ export function App() {
       <header className="site-header">
         <div className="site-header-inner">
           <a
-            href="#top"
+            href="/research"
             className="brand"
             onClick={(e) => {
               e.preventDefault()
-              setActivePost(null)
-              window.scrollTo({ top: 0, behavior: "smooth" })
+              navigate({ kind: "index" })
             }}
           >
             <span className="brand-mark">REA</span>
@@ -115,26 +147,26 @@ export function App() {
           <nav className="header-nav" aria-label="Primary navigation">
             <button
               type="button"
-              className={`btn btn-sm ${activePost === null ? "btn-primary" : "btn-ghost"}`}
-              onClick={() => setActivePost(null)}
+              className={`btn btn-sm ${route.kind === "index" ? "btn-primary" : "btn-ghost"}`}
+              onClick={() => navigate({ kind: "index" })}
             >
               All Research
             </button>
             <button
               type="button"
               className={`btn btn-sm ${
-                activePost === "evidence-first-ui" ? "btn-primary" : "btn-ghost"
+                route.kind === "post" && route.slug === "evidence-first-ui" ? "btn-primary" : "btn-ghost"
               }`}
-              onClick={() => setActivePost("evidence-first-ui")}
+              onClick={() => navigate({ kind: "post", slug: "evidence-first-ui" })}
             >
               Technical Report
             </button>
             <button
               type="button"
               className={`btn btn-sm ${
-                activePost === "__design-system__" ? "btn-primary" : "btn-ghost"
+                route.kind === "design-system" ? "btn-primary" : "btn-ghost"
               }`}
-              onClick={() => setActivePost("__design-system__")}
+              onClick={() => navigate({ kind: "design-system" })}
             >
               Design System
             </button>
@@ -147,7 +179,7 @@ export function App() {
             </button>
           </nav>
         </div>
-        {activePost !== null && activePost !== "__design-system__" && (
+        {route.kind === "post" && (
           <div
             className="reading-progress-track"
             role="progressbar"
@@ -165,9 +197,19 @@ export function App() {
       </header>
 
       <main id="top">
-        {activePost === "__design-system__" ? (
-          <DesignSystemGallery onOpenConsole={() => setConsoleOpen(true)} />
-        ) : activePost === null ? (
+        {route.kind === "design-system" ? (
+          <ErrorBoundary scope="app" resetKey="design-system">
+            <Suspense
+              fallback={
+                <div className="figure-skeleton" role="status">
+                  Loading component gallery...
+                </div>
+              }
+            >
+              <DesignSystemGallery onOpenConsole={() => setConsoleOpen(true)} />
+            </Suspense>
+          </ErrorBoundary>
+        ) : route.kind === "index" ? (
           <div className="index-shell">
             <p className="index-eyebrow">Research &amp; Releases · REA + Vercel UI SDK</p>
             <h1 className="index-title">Discoveries from Evidence-First Engineering</h1>
@@ -204,7 +246,7 @@ export function App() {
                 <button
                   type="button"
                   className="btn btn-primary"
-                  onClick={() => setActivePost(featured.slug)}
+                  onClick={() => navigate({ kind: "post", slug: featured.slug })}
                 >
                   Read interactive report →
                 </button>
@@ -235,7 +277,11 @@ export function App() {
               <SegmentedControl
                 aria-label="Filter research posts by category"
                 value={category}
-                onValueChange={(v) => setCategory(v as CategoryFilter)}
+                onValueChange={(value) => {
+                  if (value !== null) {
+                    setCategory(value)
+                  }
+                }}
               >
                 <SegmentedControlIndicator />
                 <SegmentedControlItem value="All">All</SegmentedControlItem>
@@ -281,7 +327,7 @@ export function App() {
                       <button
                         type="button"
                         className="btn btn-sm"
-                        onClick={() => setActivePost(post.slug)}
+                        onClick={() => navigate({ kind: "post", slug: post.slug })}
                       >
                         Open interactive post →
                       </button>
@@ -316,7 +362,7 @@ export function App() {
                 <button
                   type="button"
                   className="btn btn-sm btn-ghost"
-                  onClick={() => setActivePost(null)}
+                  onClick={() => navigate({ kind: "index" })}
                 >
                   ← All research
                 </button>
@@ -377,7 +423,9 @@ export function App() {
                       <code>__ftol</code>. Step through the assembly and probe the live oracle
                       below.
                     </p>
-                    <DxBallFigure />
+                    <LazyFigure title="DX-Ball Sound-Panning" slug={currentPost.slug}>
+                      <DxBallFigure />
+                    </LazyFigure>
                   </section>
 
                   <section id="agent-bridge" className="article-section">
@@ -395,7 +443,9 @@ export function App() {
                       uses, cutting token consumption and tool calls compared to raw browser
                       automation.
                     </p>
-                    <BenchmarkFigure />
+                    <LazyFigure title="Agent Bridge Benchmarks" slug={currentPost.slug}>
+                      <BenchmarkFigure />
+                    </LazyFigure>
 
                     <Collapsible className="collapsible-box">
                       <CollapsibleTrigger className="collapsible-trigger">
@@ -427,7 +477,9 @@ export function App() {
                       maps the full trust boundary from renderer preload wrappers to the
                       sender-checked <code>ipcMain.handle</code> clipboard sink.
                     </p>
-                    <NotionIpcFigure />
+                    <LazyFigure title="Notion Clipboard IPC Bridge" slug={currentPost.slug}>
+                      <NotionIpcFigure />
+                    </LazyFigure>
                   </section>
 
                   <section id="target-coverage" className="article-section">
@@ -449,7 +501,9 @@ export function App() {
                         refNum={5}
                       />.
                     </p>
-                    <TargetMatrixFigure />
+                    <LazyFigure title="Target Capability Matrix" slug={currentPost.slug}>
+                      <TargetMatrixFigure />
+                    </LazyFigure>
                   </section>
                 </>
               )}
@@ -483,7 +537,9 @@ export function App() {
                       final <code>__ftol</code> truncation and test arbitrary ball X
                       coordinates against the DirectSound pan formula.
                     </p>
-                    <DxBallFigure />
+                    <LazyFigure title="DX-Ball Sound-Panning" slug={currentPost.slug}>
+                      <DxBallFigure />
+                    </LazyFigure>
                   </section>
 
                   <section id="dx-verification" className="article-section">
@@ -499,7 +555,9 @@ export function App() {
                         refNum={3}
                       />. Inspect the illustrative tool latency trace below.
                     </p>
-                    <TargetMatrixFigure />
+                    <LazyFigure title="Target Capability Matrix" slug={currentPost.slug}>
+                      <TargetMatrixFigure />
+                    </LazyFigure>
                   </section>
                 </>
               )}
@@ -533,7 +591,9 @@ export function App() {
                       />, distinguishing verified desktop archive reads from separate cached
                       web-asset probes.
                     </p>
-                    <NotionIpcFigure />
+                    <LazyFigure title="Notion Clipboard IPC Bridge" slug={currentPost.slug}>
+                      <NotionIpcFigure />
+                    </LazyFigure>
                   </section>
 
                   <section id="notion-boundary" className="article-section">
@@ -584,7 +644,9 @@ export function App() {
                         refNum={2}
                       />.
                     </p>
-                    <AgentEnvFigure />
+                    <LazyFigure title="Offline RL Pipeline" slug={currentPost.slug}>
+                      <AgentEnvFigure />
+                    </LazyFigure>
                   </section>
 
                   <section id="env-benchmarks" className="article-section">
@@ -600,7 +662,9 @@ export function App() {
                         refNum={1}
                       />.
                     </p>
-                    <BenchmarkFigure />
+                    <LazyFigure title="Agent Bridge Benchmarks" slug={currentPost.slug}>
+                      <BenchmarkFigure />
+                    </LazyFigure>
                   </section>
                 </>
               )}
@@ -625,7 +689,11 @@ export function App() {
         )}
       </main>
 
-      <AgentConsoleDrawer open={consoleOpen} onOpenChange={setConsoleOpen} />
+      {consoleOpen && (
+        <Suspense fallback={null}>
+          <AgentConsoleDrawer open={consoleOpen} onOpenChange={setConsoleOpen} />
+        </Suspense>
+      )}
     </div>
   )
 }

@@ -39,9 +39,9 @@
     --warn-soft: #ffedd5;
     --warn-border: #fdba74;
 
-    --font-serif: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-sans: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+    --font-sans: "Geist Variable", "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --font-serif: var(--font-sans);
+    --font-mono: "Geist Mono Variable", "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
 
     --radius-sm: 6px;
     --radius-md: 8px;
@@ -1133,6 +1133,63 @@
     color: var(--ink-muted);
   }
 
+  /* Error and loading fallbacks */
+  .error-boundary-card,
+  .app-error-card,
+  .figure-error-card {
+    min-width: 0;
+    padding: 1.25rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-card);
+    color: var(--ink);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .error-boundary-figure {
+    margin: 1.75rem 0;
+  }
+
+  .error-boundary-app,
+  .app-error-shell {
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    min-height: 50vh;
+    padding: 1.25rem;
+  }
+
+  :is(.error-boundary-app, .app-error-shell) > :is(.error-boundary-card, .app-error-card) {
+    width: min(100%, 36rem);
+  }
+
+  .error-boundary-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .error-boundary-message,
+  :is(.app-error-card, .figure-error-card) p > code {
+    color: var(--ink-muted);
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    overflow-wrap: anywhere;
+  }
+
+  .figure-skeleton {
+    display: grid;
+    place-items: center;
+    min-height: 180px;
+    padding: 1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--bg-subtle);
+    color: var(--ink-muted);
+    text-align: center;
+  }
+
   /* Code panes */
   .code-split {
     display: grid;
@@ -1208,7 +1265,7 @@
     font-size: 0.86rem;
   }
 
-    .data-table th,
+  .data-table th,
   .data-table td {
     padding: 0.65rem 0.85rem;
     text-align: left;
@@ -1219,9 +1276,6 @@
 
   .data-table th {
     vertical-align: bottom;
-  }
-
-  .data-table th {
     font-size: 0.76rem;
     font-family: var(--font-mono);
     text-transform: none;
@@ -1314,6 +1368,75 @@
       grid-template-columns: minmax(120px, 150px) 1fr;
       gap: 0.5rem;
       padding: 0.4rem 0.55rem;
+    }
+  }
+
+  @media print {
+    :root {
+      color-scheme: light;
+    }
+
+    *,
+    *::before,
+    *::after {
+      background: transparent !important;
+      color: #111 !important;
+      box-shadow: none !important;
+    }
+
+    html,
+    body {
+      background: #fff !important;
+    }
+
+    .site-header,
+    .reading-progress-track,
+    .toc-rail,
+    .sidenotes-gutter,
+    .skip-link,
+    .console-fab,
+    [data-slot="drawer"],
+    .site-footer-actions,
+    .citation-popover,
+    .error-boundary-actions,
+    button:not(.citation-trigger),
+    input,
+    select,
+    textarea {
+      display: none !important;
+    }
+
+    .report-shell,
+    .article-shell {
+      display: block;
+      max-width: 100%;
+      padding: 0;
+    }
+
+    .figure-card,
+    .abstract-box,
+    pre {
+      break-inside: avoid;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+
+    .sidenote-card,
+    .sidenote,
+    .abstract-box .sidenote {
+      display: block;
+      float: none;
+      clear: none;
+      width: auto;
+      margin: 0.5rem 0;
+      padding: 0.4rem 0.6rem;
+      border: 1px solid #bbb;
+      border-radius: var(--radius-sm);
+      font-size: 0.8rem;
+      break-inside: avoid;
     }
   }
 }

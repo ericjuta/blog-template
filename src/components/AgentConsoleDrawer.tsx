@@ -25,7 +25,7 @@ export function AgentConsoleDrawer({
   open,
   onOpenChange,
 }: AgentConsoleDrawerProps) {
-  const [snapshot, setSnapshot] = useState<AgentComponent[]>([])
+  const [snapshot, setSnapshot] = useState<Array<AgentComponent>>([])
   const [agentState, setAgentState] = useState(() => readAgentState())
   const [statusMessage, setStatusMessage] = useState<string>("")
 
@@ -42,23 +42,27 @@ export function AgentConsoleDrawer({
   }
 
   useEffect(() => {
-    if (open) {
-      setSnapshot(getBlogAgent().snapshot())
-      setAgentState(readAgentState())
-    }
-    return subscribeAgentState(() => {
+    const sync = () => {
       setAgentState(readAgentState())
       if (open) {
         setSnapshot(getBlogAgent().snapshot())
       }
-    })
+    }
+    const timer = open ? window.setTimeout(sync, 0) : null
+    const unsubscribe = subscribeAgentState(sync)
+    return () => {
+      if (timer !== null) {
+        window.clearTimeout(timer)
+      }
+      unsubscribe()
+    }
   }, [open])
 
   const runDemoAction = async (
     label: string,
     targetPattern: RegExp,
     action: string,
-    args?: unknown[]
+    args?: Array<unknown>
   ) => {
     const agent = getBlogAgent()
     const components = agent.snapshot()
@@ -73,14 +77,12 @@ export function AgentConsoleDrawer({
     }
     setStatusMessage(`Running "${label}" on ${match.label}...`)
     try {
+      const steps =
+        args !== undefined
+          ? [{ ref: match.ref, action, args }]
+          : [{ ref: match.ref, action }]
       const result = await agent.act({
-        steps: [
-          {
-            ref: match.ref,
-            action,
-            ...(args ? { args } : {}),
-          },
-        ],
+        steps,
       })
       setSnapshot(agent.snapshot())
       recordEvent({
@@ -92,8 +94,8 @@ export function AgentConsoleDrawer({
       setStatusMessage(
         result.ok ? `Completed "${label}".` : `Action "${label}" was declined or blocked.`
       )
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err)
+    } catch (error) {
+      const msg = error instanceof Error ? error.message : String(error)
       recordEvent({
         kind: "act",
         summary: `${label} failed`,

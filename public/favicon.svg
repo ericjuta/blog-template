@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
+  <style>
+    .tile { color: #ededed; fill: #171717; }
+    @media (prefers-color-scheme: dark) {
+      .tile { color: #171717; fill: #ededed; }
+    }
+  </style>
+  <g class="tile">
+    <rect width="32" height="32" rx="7" />
+    <path d="M9.5 24V8.5H17a4.5 4.5 0 0 1 0 9H9.5m6.5 0L22 23.5" fill="none" stroke="currentColor" stroke-width="3" />
+    <circle cx="22" cy="23.5" r="2.5" fill="currentColor" />
+  </g>
+</svg>

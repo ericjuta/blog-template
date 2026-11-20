@@ -90,7 +90,7 @@ const STAGES: Record<EnvStage, StageSpec> = {
   },
 }
 
-const STAGE_ORDER: EnvStage[] = ["capture", "compile", "replay", "grade"]
+const STAGE_ORDER: Array<EnvStage> = ["capture", "compile", "replay", "grade"]
 
 export function AgentEnvFigure() {
   const [stage, setStage] = useState<EnvStage>("capture")
@@ -111,7 +111,7 @@ export function AgentEnvFigure() {
             value={stage}
             onValueChange={(next) => {
               if (next && next in STAGES) {
-                setStage(next as EnvStage)
+                setStage(next)
               }
             }}
           >

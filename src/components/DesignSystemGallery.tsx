@@ -315,7 +315,7 @@ export function DesignSystemGallery({ onOpenConsole }: { onOpenConsole: () => vo
               <CollapsiblePanel>
                 <div className="collapsible-panel-inner">
                   UI SDK automatically injects and rotates the chevron indicator on{" "}
-                  <code>[data-slot="collapsible-trigger"]</code> without duplicate text labels.
+                  <code>{`[data-slot="collapsible-trigger"]`}</code> without duplicate text labels.
                 </div>
               </CollapsiblePanel>
             </Collapsible>

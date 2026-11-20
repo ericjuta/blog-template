@@ -1,9 +1,5 @@
-import {
-  createChange,
-  createRovingFocus,
-  definePrimitive,
-  type ChangeDetails,
-} from "@ui-sdk/core"
+import { createChange, createRovingFocus, definePrimitive } from '@ui-sdk/core';
+import type { ChangeDetails } from '@ui-sdk/core';
 
 // "step-navigation" is not in the shared ReasonVocabulary.
 type EvidenceStepperReason = "item-press" | "list-navigation" | "step-navigation"
@@ -11,7 +7,7 @@ type EvidenceStepperReason = "item-press" | "list-navigation" | "step-navigation
 type EvidenceStepperOptions = {
   value?: string
   defaultValue?: string
-  steps?: string[]
+  steps?: Array<string>
   onValueChange?: (
     value: string,
     details: ChangeDetails<EvidenceStepperReason>
@@ -32,10 +28,18 @@ const evidenceStepper = definePrimitive({
     steps: options.steps ?? [],
     focused: null as string | null,
   }),
-  sync: (options) => ({
-    ...(options.value !== undefined ? { value: options.value } : {}),
-    ...(options.steps !== undefined ? { steps: options.steps } : {}),
-  }),
+  sync: (options) => {
+    if (options.value !== undefined && options.steps !== undefined) {
+      return { value: options.value, steps: options.steps }
+    }
+    if (options.value !== undefined) {
+      return { value: options.value }
+    }
+    if (options.steps !== undefined) {
+      return { steps: options.steps }
+    }
+    return {}
+  },
   api: (context) => {
     const change = createChange(context)
     const roving = createRovingFocus(context, {
@@ -55,7 +59,7 @@ const evidenceStepper = definePrimitive({
       event?: Event
     ) => {
       const { steps } = context.store.get()
-      if (steps.length > 0 && !steps.includes(stepValue)) return false
+      if (steps.length > 0 && !steps.includes(stepValue)) {return false}
       return change("value", stepValue, { reason, event })
     }
 
@@ -67,19 +71,19 @@ const evidenceStepper = definePrimitive({
       next: (event?: Event) => {
         const { steps, value } = context.store.get()
         const idx = steps.indexOf(value)
-        if (idx < 0 || idx >= steps.length - 1) return false
+        if (idx < 0 || idx >= steps.length - 1) {return false}
         const target = steps[idx + 1]
         const ok = selectStep(target, "step-navigation", event)
-        if (ok) roving.focus(target)
+        if (ok) {roving.focus(target)}
         return ok
       },
       previous: (event?: Event) => {
         const { steps, value } = context.store.get()
         const idx = steps.indexOf(value)
-        if (idx <= 0) return false
+        if (idx <= 0) {return false}
         const target = steps[idx - 1]
         const ok = selectStep(target, "step-navigation", event)
-        if (ok) roving.focus(target)
+        if (ok) {roving.focus(target)}
         return ok
       },
       keydown(event: KeyboardEvent, el: HTMLElement) {
@@ -120,7 +124,7 @@ const evidenceStepper = definePrimitive({
       },
       on: {
         keydown: (event, { el, api }) => {
-          if (el) api.keydown(event, el)
+          if (el) {api.keydown(event, el)}
         },
       },
       bind: (el, part) => part.api.roving.bind(el, part),

@@ -11,12 +11,8 @@ import {
   WaterfallRow,
   WaterfallRowHeader,
 } from "@ui-sdk/react/waterfall"
-import {
-  INVESTIGATION_META,
-  INVESTIGATION_SPANS,
-  REA_TARGETS,
-  type TargetRow,
-} from "../data/blog-data"
+import { INVESTIGATION_META, INVESTIGATION_SPANS, REA_TARGETS } from '../data/blog-data';
+import type { TargetRow } from '../data/blog-data';
 
 type EngineFilter = "all" | TargetRow["engine"]
 
@@ -28,8 +24,8 @@ export function TargetMatrixFigure() {
   const filteredTargets = useMemo(() => {
     const q = query.trim().toLowerCase()
     return REA_TARGETS.filter((t) => {
-      if (engine !== "all" && t.engine !== engine) return false
-      if (!q) return true
+      if (engine !== "all" && t.engine !== engine) {return false}
+      if (!q) {return true}
       return (
         t.target.toLowerCase().includes(q) ||
         t.tool.toLowerCase().includes(q) ||
@@ -39,7 +35,9 @@ export function TargetMatrixFigure() {
     })
   }, [engine, query])
 
-  const spanMeta = INVESTIGATION_META[selectedSpan]
+  const spanMeta = Object.entries(INVESTIGATION_META).find(
+    ([key]) => key === selectedSpan
+  )?.[1]
 
   return (
     <figure className="figure-card" aria-labelledby="fig-matrix-title">
@@ -54,7 +52,11 @@ export function TargetMatrixFigure() {
         <SegmentedControl
           aria-label="Filter REA targets by engine requirement"
           value={engine}
-          onValueChange={(v) => setEngine(v as EngineFilter)}
+          onValueChange={(v) => {
+            if (v !== null) {
+              setEngine(v)
+            }
+          }}
         >
           <SegmentedControlIndicator />
           <SegmentedControlItem value="all">All</SegmentedControlItem>
@@ -116,7 +118,7 @@ export function TargetMatrixFigure() {
               {filteredTargets.length === 0 && (
                 <tr>
                   <td colSpan={4} style={{ textAlign: "center", color: "var(--ink-muted)" }}>
-                    No target families match "{query}".
+                    No target families match &ldquo;{query}&rdquo;.
                   </td>
                 </tr>
               )}
@@ -140,7 +142,7 @@ export function TargetMatrixFigure() {
             defaultExpanded={["session"]}
             value={selectedSpan}
             onValueChange={(next) => {
-              if (next) setSelectedSpan(next)
+              if (next) {setSelectedSpan(next)}
             }}
           >
             {INVESTIGATION_SPANS.flatMap((span) => [span, ...(span.children ?? [])]).map((span) => (
