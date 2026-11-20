@@ -92,7 +92,11 @@ function getBlogAgent(): BlogAgent {
 
     if (typeof window !== "undefined") {
       Object.assign(window, { reaBlogAgent: sharedAgent })
-      unregisterWebMcp = registerTools(sharedAgent, { allow: () => true })
+      try {
+        unregisterWebMcp = registerTools(sharedAgent, { allow: () => true })
+      } catch {
+        unregisterWebMcp = null
+      }
     }
   }
   return sharedAgent
