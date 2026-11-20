@@ -11,6 +11,7 @@ import {
 } from "@ui-sdk/react/segmented-control"
 import {
   BLOG_POSTS,
+  POST_TOCS,
   REFERENCES,
   REPORT_TOC,
   type PostCategory,
@@ -21,6 +22,7 @@ import { DxBallFigure } from "./components/DxBallFigure"
 import { BenchmarkFigure } from "./components/BenchmarkFigure"
 import { TargetMatrixFigure } from "./components/TargetMatrixFigure"
 import { NotionIpcFigure } from "./components/NotionIpcFigure"
+import { AgentEnvFigure } from "./components/AgentEnvFigure"
 import { AgentConsoleDrawer } from "./components/AgentConsoleDrawer"
 import { getBlogAgent } from "./lib/blog-agent"
 
@@ -44,6 +46,11 @@ export function App() {
   )
 
   const currentPost = BLOG_POSTS.find((p) => p.slug === activePost) ?? featured
+  const currentToc = POST_TOCS[currentPost.slug] ?? REPORT_TOC
+
+  useEffect(() => {
+    setActiveToc(currentToc[0]?.id ?? "dx-ball-trace")
+  }, [currentPost.slug])
 
   return (
     <div>
@@ -220,7 +227,7 @@ export function App() {
             <aside className="toc-rail" aria-label="Table of contents">
               <p className="toc-heading">Contents</p>
               <ul className="toc-list">
-                {REPORT_TOC.map((item) => (
+                {currentToc.map((item) => (
                   <li key={item.id}>
                     <a
                       href={`#${item.id}`}
@@ -262,78 +269,180 @@ export function App() {
                 <CoverArtwork kind={currentPost.artwork} />
               </div>
 
-              <div className="abstract-box">
-                <strong>Abstract.</strong> Reverse engineering produces graphs of
-                disassembly, memory reads, IPC hops, and residual unknowns. Static blog
-                prose flattens that structure. By pairing REA’s evidence-backed analysis
-                model with Vercel UI SDK’s accessible, agent-addressable primitives, every
-                figure in this report becomes an inspectable instrument for both human
-                readers and coding agents.
-              </div>
+              {currentPost.slug === "evidence-first-ui" && (
+                <>
+                  <div className="abstract-box">
+                    <strong>Abstract.</strong> Reverse engineering produces graphs of
+                    disassembly, memory reads, IPC hops, and residual unknowns. Static blog
+                    prose flattens that structure. By pairing REA’s evidence-backed analysis
+                    model with Vercel UI SDK’s accessible, agent-addressable primitives, every
+                    figure in this report becomes an inspectable instrument for both human
+                    readers and coding agents.
+                  </div>
 
-              <section id="dx-ball-trace" className="article-section">
-                <h2>Case I: DX-Ball Sound-Panning Reconstruction</h2>
-                <p>
-                  In the DX-Ball showcase, REA traces the x86 DirectSound pan routine at{" "}
-                  <code>0x406409</code> through five evidence-backed steps—loading the
-                  ball’s horizontal coordinate, multiplying by <code>1.5625</code>,
-                  subtracting <code>500.0</code>, scaling, and truncating via{" "}
-                  <code>__ftol</code>. Step through the assembly and probe the live oracle
-                  below.
-                </p>
-                <DxBallFigure />
-              </section>
+                  <section id="dx-ball-trace" className="article-section">
+                    <h2>Case I: DX-Ball Sound-Panning Reconstruction</h2>
+                    <p>
+                      In the DX-Ball showcase, REA traces the x86 DirectSound pan routine at{" "}
+                      <code>0x406409</code> through five evidence-backed steps—loading the
+                      ball’s horizontal coordinate, multiplying by <code>1.5625</code>,
+                      subtracting <code>500.0</code>, scaling, and truncating via{" "}
+                      <code>__ftol</code>. Step through the assembly and probe the live oracle
+                      below.
+                    </p>
+                    <DxBallFigure />
+                  </section>
 
-              <section id="agent-bridge" className="article-section">
-                <h2>Why Headless + Agent-Ready Matters</h2>
-                <p>
-                  Vercel UI SDK separates interaction state, roving focus, and ARIA
-                  semantics from visual styling. Because every control registers with{" "}
-                  <code>createAgent()</code>, an agent can inspect and drive the exact same
-                  figures a human reader uses—cutting token consumption and tool calls
-                  compared to raw browser automation.
-                </p>
-                <BenchmarkFigure />
+                  <section id="agent-bridge" className="article-section">
+                    <h2>Why Headless + Agent-Ready Matters</h2>
+                    <p>
+                      Vercel UI SDK separates interaction state, roving focus, and ARIA
+                      semantics from visual styling. Because every control registers with{" "}
+                      <code>createAgent()</code>, an agent can inspect and drive the exact same
+                      figures a human reader uses—cutting token consumption and tool calls
+                      compared to raw browser automation.
+                    </p>
+                    <BenchmarkFigure />
 
-                <Collapsible className="collapsible-box">
-                  <CollapsibleTrigger className="collapsible-trigger">
-                    <span>Methodology note: 3-run median benchmark details</span>
-                    <span className="mono" style={{ fontSize: "0.78rem" }}>
-                      Toggle
-                    </span>
-                  </CollapsibleTrigger>
-                  <CollapsiblePanel>
-                    <div className="collapsible-panel-inner">
-                      All benchmark numbers reflect three-run medians from the Vercel UI SDK
-                      agent bridge evaluation comparing browser-only automation against
-                      structured <code>snapshot()</code> / <code>act()</code> calls. Open
-                      the <strong>Agent Console</strong> in the top bar to run live bridge
-                      actions against this page.
-                    </div>
-                  </CollapsiblePanel>
-                </Collapsible>
-              </section>
+                    <Collapsible className="collapsible-box">
+                      <CollapsibleTrigger className="collapsible-trigger">
+                        <span>Methodology note: 3-run median benchmark details</span>
+                        <span className="mono" style={{ fontSize: "0.78rem" }}>
+                          Toggle
+                        </span>
+                      </CollapsibleTrigger>
+                      <CollapsiblePanel>
+                        <div className="collapsible-panel-inner">
+                          All benchmark numbers reflect three-run medians from the Vercel UI SDK
+                          agent bridge evaluation comparing browser-only automation against
+                          structured <code>snapshot()</code> / <code>act()</code> calls. Open
+                          the <strong>Agent Console</strong> in the top bar to run live bridge
+                          actions against this page.
+                        </div>
+                      </CollapsiblePanel>
+                    </Collapsible>
+                  </section>
 
-              <section id="notion-ipc" className="article-section">
-                <h2>Case II: Notion Desktop 7.6.1 Clipboard IPC Bridge</h2>
-                <p>
-                  Static JavaScript analysis in REA does not require a native disassembler.
-                  Inspecting Notion Desktop’s <code>app.asar</code> maps the full trust
-                  boundary from renderer preload wrappers to the sender-checked{" "}
-                  <code>ipcMain.handle</code> clipboard sink.
-                </p>
-                <NotionIpcFigure />
-              </section>
+                  <section id="notion-ipc" className="article-section">
+                    <h2>Case II: Notion Desktop 7.6.1 Clipboard IPC Bridge</h2>
+                    <p>
+                      Static JavaScript analysis in REA does not require a native disassembler.
+                      Inspecting Notion Desktop’s <code>app.asar</code> maps the full trust
+                      boundary from renderer preload wrappers to the sender-checked{" "}
+                      <code>ipcMain.handle</code> clipboard sink.
+                    </p>
+                    <NotionIpcFigure />
+                  </section>
 
-              <section id="target-coverage" className="article-section">
-                <h2>Target Capability Matrix &amp; Investigation Trace</h2>
-                <p>
-                  REA routes each artifact to a specialized static reader, bring-your-own
-                  disassembler, or live runtime bridge. Filter the target matrix by engine
-                  requirement and inspect the 940 ms DX-Ball investigation waterfall below.
-                </p>
-                <TargetMatrixFigure />
-              </section>
+                  <section id="target-coverage" className="article-section">
+                    <h2>Target Capability Matrix &amp; Investigation Trace</h2>
+                    <p>
+                      REA routes each artifact to a specialized static reader, bring-your-own
+                      disassembler, or live runtime bridge. Filter the target matrix by engine
+                      requirement and inspect the 940 ms DX-Ball investigation waterfall below.
+                    </p>
+                    <TargetMatrixFigure />
+                  </section>
+                </>
+              )}
+
+              {currentPost.slug === "dx-ball-sound-pan" && (
+                <>
+                  <div id="dx-abstract" className="abstract-box">
+                    <strong>Abstract.</strong> Decompilers frequently hide x87 stack-passing
+                    conventions and inline float constants. In DX-Ball 1.07, the sound-panning
+                    routine at <code>0x00406400</code> spans just 63 bytes of x86—yet recovering
+                    its exact C implementation requires reconciling caller disassembly, raw
+                    memory reads of <code>.rdata</code> constants, and 3,205 oracle comparisons.
+                  </div>
+
+                  <section id="dx-disassembly" className="article-section">
+                    <h2>63 Bytes at 0x00406400</h2>
+                    <p>
+                      Every step below is bound to an immutable REA Evidence ID. Walk through
+                      the five transitions from the hidden stack input to the final{" "}
+                      <code>__ftol</code> truncation and test arbitrary ball X coordinates
+                      against the live DirectSound pan formula.
+                    </p>
+                    <DxBallFigure />
+                  </section>
+
+                  <section id="dx-verification" className="article-section">
+                    <h2>Oracle Verification &amp; Investigation Trace</h2>
+                    <p>
+                      After reconstructing the C expression, REA’s verification harness ran
+                      3,205 input combinations against the original x86 binary and confirmed
+                      all 63 compiled bytes match. Inspect the end-to-end tool latency trace
+                      below.
+                    </p>
+                    <TargetMatrixFigure />
+                  </section>
+                </>
+              )}
+
+              {currentPost.slug === "notion-clipboard-bridge" && (
+                <>
+                  <div id="notion-abstract" className="abstract-box">
+                    <strong>Abstract.</strong> Desktop Electron apps split privilege across
+                    renderer bundles, preload bridges, and main-process IPC handlers. Using
+                    REA’s static JavaScript application graph on Notion Desktop 7.6.1’s{" "}
+                    <code>app.asar</code>, we trace <code>window.__electronApi.clipboard.write</code>{" "}
+                    across all four hops without launching a native disassembler.
+                  </div>
+
+                  <section id="notion-hops" className="article-section">
+                    <h2>Four-Hop IPC Trace</h2>
+                    <p>
+                      Select each hop to inspect the exact bundle excerpt, REA static
+                      observation, and provenance boundary—distinguishing verified desktop
+                      archive reads from separate cached web-asset probes.
+                    </p>
+                    <NotionIpcFigure />
+                  </section>
+
+                  <section id="notion-boundary" className="article-section">
+                    <h2>Sender Trust Boundary</h2>
+                    <p>
+                      Before touching Electron’s native <code>clipboard.write</code>, the main
+                      process validates the IPC sender frame via{" "}
+                      <code>isNotionWebContents(event.sender)</code>. Untrusted frames are
+                      rejected before any OS clipboard mutation occurs.
+                    </p>
+                  </section>
+                </>
+              )}
+
+              {currentPost.slug === "agent-environments" && (
+                <>
+                  <div id="env-abstract" className="abstract-box">
+                    <strong>Abstract.</strong> Training and evaluating coding agents against
+                    live web apps is slow, flaky, and unsafe. REA’s <code>export_environment_bundle</code>{" "}
+                    compiles recorded CDP and HAR captures into deterministic local harnesses
+                    that expose structured WebMCP and Vercel UI SDK controls with zero live
+                    side effects.
+                  </div>
+
+                  <section id="env-pipeline" className="article-section">
+                    <h2>Offline RL Pipeline</h2>
+                    <p>
+                      Step through the four stages—Capture, Compile, Replay, and Grade—to see
+                      how REA pins network responses by SHA-256 digest and isolates agent
+                      rollouts from external systems.
+                    </p>
+                    <AgentEnvFigure />
+                  </section>
+
+                  <section id="env-benchmarks" className="article-section">
+                    <h2>Agent Bridge Efficiency</h2>
+                    <p>
+                      Pairing deterministic offline environments with Vercel UI SDK’s{" "}
+                      <code>snapshot()</code> and <code>act()</code> bridge eliminates DOM
+                      scraping overhead during rollouts.
+                    </p>
+                    <BenchmarkFigure />
+                  </section>
+                </>
+              )}
 
               <section id="references" className="article-section">
                 <h2>Notes &amp; References</h2>

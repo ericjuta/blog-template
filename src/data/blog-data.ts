@@ -103,17 +103,34 @@ export type TocSection = {
 }
 
 export const REPORT_TOC: TocSection[] = [
-  { id: "abstract", label: "Abstract", level: 2 },
-  { id: "why-behaviors", label: "Why behaviors beat scraping", level: 2 },
-  { id: "benchmark", label: "Agent bridge benchmarks", level: 3 },
   { id: "dx-ball-trace", label: "Case I: DX-Ball x86 → C", level: 2 },
-  { id: "pan-simulator", label: "Interactive pan oracle", level: 3 },
+  { id: "agent-bridge", label: "Headless + Agent-Ready", level: 2 },
   { id: "notion-ipc", label: "Case II: Notion IPC bridge", level: 2 },
-  { id: "investigation-waterfall", label: "Investigation latency trace", level: 2 },
-  { id: "target-coverage", label: "Target capability matrix", level: 2 },
-  { id: "agent-bridge", label: "Live UI SDK agent bridge", level: 2 },
+  { id: "target-coverage", label: "Target matrix & trace", level: 2 },
   { id: "references", label: "Notes & references", level: 2 },
 ]
+
+export const POST_TOCS: Record<PostSlug, TocSection[]> = {
+  "evidence-first-ui": REPORT_TOC,
+  "dx-ball-sound-pan": [
+    { id: "dx-abstract", label: "Abstract", level: 2 },
+    { id: "dx-disassembly", label: "63 bytes at 0x00406400", level: 2 },
+    { id: "dx-verification", label: "Oracle verification", level: 2 },
+    { id: "references", label: "Notes & references", level: 2 },
+  ],
+  "notion-clipboard-bridge": [
+    { id: "notion-abstract", label: "Abstract", level: 2 },
+    { id: "notion-hops", label: "Four-hop IPC trace", level: 2 },
+    { id: "notion-boundary", label: "Sender trust boundary", level: 2 },
+    { id: "references", label: "Notes & references", level: 2 },
+  ],
+  "agent-environments": [
+    { id: "env-abstract", label: "Abstract", level: 2 },
+    { id: "env-pipeline", label: "Offline RL pipeline", level: 2 },
+    { id: "env-benchmarks", label: "Agent bridge efficiency", level: 2 },
+    { id: "references", label: "Notes & references", level: 2 },
+  ],
+}
 
 export type BenchmarkFramework = "react" | "vue" | "svelte"
 

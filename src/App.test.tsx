@@ -99,4 +99,23 @@ describe("REA Research Blog interactive UX", () => {
       within(dialog).getByText(/Discovered SDK Components/i)
     ).toBeTruthy()
   })
+
+  it("renders dedicated interactive body for AgentEnv archive post", async () => {
+    const user = userEvent.setup()
+    render(<App />)
+    await user.click(screen.getByRole("button", { name: /^All Research$/i }))
+    const heading = screen.getByRole("heading", {
+      name: /AgentEnv: Turning Recorded Captures/i,
+    })
+    const card = heading.closest("article")
+    expect(card).toBeTruthy()
+    await user.click(
+      within(card as HTMLElement).getByRole("button", {
+        name: /Open interactive post/i,
+      })
+    )
+    expect(screen.getByRole("heading", { name: /Offline RL Pipeline/i })).toBeTruthy()
+    await user.click(screen.getByRole("radio", { name: /2\. Compile/i }))
+    expect(screen.getByText(/routes_synthesized/i)).toBeTruthy()
+  })
 })
