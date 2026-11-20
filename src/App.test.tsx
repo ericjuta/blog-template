@@ -131,4 +131,13 @@ describe("REA Research Blog interactive UX", () => {
     await user.click(noteBtn)
     expect(screen.getByText(/Note \[3\] · Showcase scope/i)).toBeTruthy()
   })
+
+  it("opens the Design System gallery with interactive UI SDK specimens", async () => {
+    const user = userEvent.setup()
+    render(<App />)
+
+    await user.click(screen.getByRole("button", { name: /^Design System$/i }))
+    expect(screen.getByRole("heading", { name: /Component Gallery/i })).toBeTruthy()
+    expect(screen.getByRole("heading", { name: /Waterfall & Collapsible/i })).toBeTruthy()
+  })
 })

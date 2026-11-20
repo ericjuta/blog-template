@@ -25,13 +25,16 @@ import { NotionIpcFigure } from "./components/NotionIpcFigure"
 import { AgentEnvFigure } from "./components/AgentEnvFigure"
 import { AgentConsoleDrawer } from "./components/AgentConsoleDrawer"
 import { Sidenote } from "./components/Citation"
+import { DesignSystemGallery } from "./components/DesignSystemGallery"
 import { getBlogAgent } from "./lib/blog-agent"
 
 type CategoryFilter = "All" | PostCategory
 
 export function App() {
-  const [activePost, setActivePost] = useState<PostSlug | null>(
-    "evidence-first-ui"
+  const [activePost, setActivePost] = useState<PostSlug | "__design-system__" | null>(() =>
+    typeof window !== "undefined" && window.location.hash === "#design-system"
+      ? "__design-system__"
+      : "evidence-first-ui"
   )
   const [category, setCategory] = useState<CategoryFilter>("All")
   const [consoleOpen, setConsoleOpen] = useState(false)
@@ -125,6 +128,15 @@ export function App() {
             </button>
             <button
               type="button"
+              className={`btn btn-sm ${
+                activePost === "__design-system__" ? "btn-primary" : "btn-ghost"
+              }`}
+              onClick={() => setActivePost("__design-system__")}
+            >
+              Design System
+            </button>
+            <button
+              type="button"
               className="btn btn-sm"
               onClick={() => setConsoleOpen(true)}
             >
@@ -132,7 +144,7 @@ export function App() {
             </button>
           </nav>
         </div>
-        {activePost !== null && (
+        {activePost !== null && activePost !== "__design-system__" && (
           <div
             className="reading-progress-track"
             role="progressbar"
@@ -150,7 +162,9 @@ export function App() {
       </header>
 
       <main id="top">
-        {activePost === null ? (
+        {activePost === "__design-system__" ? (
+          <DesignSystemGallery onOpenConsole={() => setConsoleOpen(true)} />
+        ) : activePost === null ? (
           <div className="index-shell">
             <p className="index-eyebrow">Research &amp; Releases · REA + Vercel UI SDK</p>
             <h1 className="index-title">Discoveries from Evidence-First Engineering</h1>
