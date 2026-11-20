@@ -7,13 +7,13 @@ import "./styles.css"
 import { App } from "./App"
 import { ErrorBoundary } from "./components/ErrorBoundary"
 import { installGlobalErrorHandlers } from "./lib/error-reporter"
-import { registerResearchTool } from "./lib/research-webmcp"
+import { registerResearchTools } from "./lib/research-webmcp"
 
 installGlobalErrorHandlers()
 
-const unregisterResearchTool = registerResearchTool()
-if (import.meta.hot && unregisterResearchTool) {
-  import.meta.hot.dispose(unregisterResearchTool)
+const unregisterResearchTools = registerResearchTools()
+if (import.meta.hot && unregisterResearchTools) {
+  import.meta.hot.dispose(unregisterResearchTools)
 }
 
 const rootEl = document.getElementById("root")
