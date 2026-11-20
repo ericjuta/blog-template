@@ -1,4 +1,5 @@
 /*
+  Link: </sitemap.xml>; rel="sitemap"
   Content-Security-Policy: default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; font-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
   X-Content-Type-Options: nosniff
   X-Frame-Options: DENY
@@ -14,3 +15,12 @@
 
 /og-image.png
   Cache-Control: public, max-age=86400
+
+/
+  Link: </index.md>; rel="alternate"; type="text/markdown", </llms.txt>; rel="describedby", </.well-known/ard.json>; rel="ard"
+
+/*.md
+  Content-Type: text/markdown; charset=utf-8
+
+/feed.xml
+  Content-Type: application/rss+xml; charset=utf-8

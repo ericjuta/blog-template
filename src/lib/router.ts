@@ -133,8 +133,8 @@ export type UseAppRouteResult = {
   navigate: (next: AppRoute, options?: { replace?: boolean }) => void
 }
 
-export function useAppRoute(): UseAppRouteResult {
-  const [route, setRoute] = useState<AppRoute>(readCurrentRoute)
+export function useAppRoute(initialRoute?: AppRoute): UseAppRouteResult {
+  const [route, setRoute] = useState<AppRoute>(() => initialRoute ?? readCurrentRoute())
 
   useEffect(() => {
     if (typeof window === "undefined") {return}

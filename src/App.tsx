@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from "react"
-import type { ReactNode } from "react"
+import type { MouseEvent, ReactNode } from "react"
 import {
   Collapsible,
   CollapsiblePanel,
@@ -21,7 +21,8 @@ import { Sidenote } from "./components/Citation"
 import { CoverArtwork } from "./components/CoverArtwork"
 import { ErrorBoundary } from "./components/ErrorBoundary"
 import { getBlogAgent } from "./lib/blog-agent"
-import { useAppRoute } from "./lib/router"
+import { routeToPath, useAppRoute } from "./lib/router"
+import type { AppRoute } from "./lib/router"
 
 const DesignSystemGallery = lazy(() =>
   import("./components/DesignSystemGallery").then((module) => ({ default: module.DesignSystemGallery }))
@@ -71,8 +72,8 @@ function LazyFigure({
   )
 }
 
-export function App() {
-  const { route, navigate } = useAppRoute()
+export function App({ initialRoute }: { initialRoute?: AppRoute }) {
+  const { route, navigate } = useAppRoute(initialRoute)
   const [category, setCategory] = useState<CategoryFilter>("All")
   const [consoleOpen, setConsoleOpen] = useState(false)
   const [activeToc, setActiveToc] = useState<string>(REPORT_TOC[0]?.id ?? "dx-ball-trace")
@@ -125,6 +126,15 @@ export function App() {
     }
   }, [route.kind, currentToc])
 
+  const routeLink = (destination: AppRoute) => ({
+    href: routeToPath(destination),
+    onClick(event: MouseEvent<HTMLAnchorElement>) {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {return}
+      event.preventDefault()
+      navigate(destination)
+    },
+  })
+
   return (
     <div>
       <a href="#top" className="skip-link">
@@ -132,44 +142,34 @@ export function App() {
       </a>
       <header className="site-header">
         <div className="site-header-inner">
-          <a
-            href="/research"
-            className="brand"
-            onClick={(e) => {
-              e.preventDefault()
-              navigate({ kind: "index" })
-            }}
-          >
+          <a className="brand" {...routeLink({ kind: "index" })}>
             <span className="brand-mark">REA</span>
             <span>REA Research</span>
           </a>
 
           <nav className="header-nav" aria-label="Primary navigation">
-            <button
-              type="button"
+            <a
               className={`btn btn-sm ${route.kind === "index" ? "btn-primary" : "btn-ghost"}`}
-              onClick={() => navigate({ kind: "index" })}
+              {...routeLink({ kind: "index" })}
             >
               All Research
-            </button>
-            <button
-              type="button"
+            </a>
+            <a
               className={`btn btn-sm ${
                 route.kind === "post" && route.slug === "evidence-first-ui" ? "btn-primary" : "btn-ghost"
               }`}
-              onClick={() => navigate({ kind: "post", slug: "evidence-first-ui" })}
+              {...routeLink({ kind: "post", slug: "evidence-first-ui" })}
             >
               Technical Report
-            </button>
-            <button
-              type="button"
+            </a>
+            <a
               className={`btn btn-sm ${
                 route.kind === "design-system" ? "btn-primary" : "btn-ghost"
               }`}
-              onClick={() => navigate({ kind: "design-system" })}
+              {...routeLink({ kind: "design-system" })}
             >
               Design System
-            </button>
+            </a>
             <button
               type="button"
               className="btn btn-sm"
@@ -202,23 +202,22 @@ export function App() {
             <div className="error-boundary-card">
               <h1>404: Page not found</h1>
               <p style={{ overflowWrap: "anywhere" }}>
-                The requested page could not be found: <code>{route.pathname}</code>
+                The requested page could not be found
+                {route.pathname ? <>: <code>{route.pathname}</code></> : "."}
               </p>
               <div className="error-boundary-actions">
-                <button
-                  type="button"
+                <a
                   className="btn btn-primary"
-                  onClick={() => navigate({ kind: "index" })}
+                  {...routeLink({ kind: "index" })}
                 >
                   All Research
-                </button>
-                <button
-                  type="button"
+                </a>
+                <a
                   className="btn"
-                  onClick={() => navigate({ kind: "post", slug: "evidence-first-ui" })}
+                  {...routeLink({ kind: "post", slug: "evidence-first-ui" })}
                 >
                   Technical Report
-                </button>
+                </a>
               </div>
             </div>
           </div>
@@ -268,13 +267,12 @@ export function App() {
                 <p style={{ color: "var(--ink-secondary)", margin: "0 0 1.25rem" }}>
                   {featured.subtitle}
                 </p>
-                <button
-                  type="button"
+                <a
                   className="btn btn-primary"
-                  onClick={() => navigate({ kind: "post", slug: featured.slug })}
+                  {...routeLink({ kind: "post", slug: featured.slug })}
                 >
                   Read interactive report →
-                </button>
+                </a>
               </div>
             </article>
 
@@ -349,13 +347,12 @@ export function App() {
                       {post.subtitle}
                     </p>
                     <div style={{ marginTop: "0.75rem" }}>
-                      <button
-                        type="button"
+                      <a
                         className="btn btn-sm"
-                        onClick={() => navigate({ kind: "post", slug: post.slug })}
+                        {...routeLink({ kind: "post", slug: post.slug })}
                       >
                         Open interactive post →
-                      </button>
+                      </a>
                     </div>
                   </div>
                 </article>
@@ -384,13 +381,12 @@ export function App() {
 
             <article className="article-column">
               <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                <button
-                  type="button"
+                <a
                   className="btn btn-sm btn-ghost"
-                  onClick={() => navigate({ kind: "index" })}
+                  {...routeLink({ kind: "index" })}
                 >
                   ← All research
-                </button>
+                </a>
                 <span className="pill-badge">{currentPost.category}</span>
               </div>
 

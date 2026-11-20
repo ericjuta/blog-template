@@ -85,7 +85,7 @@ describe("REA Research Blog interactive UX", () => {
 
     expect(window.location.pathname).toBe("/")
 
-    await user.click(screen.getByRole("button", { name: /^All Research$/i }))
+    await user.click(screen.getByRole("link", { name: /^All Research$/i }))
     expect(window.location.pathname).toBe("/research")
     expect(
       await screen.findByRole("heading", {
@@ -94,7 +94,7 @@ describe("REA Research Blog interactive UX", () => {
     ).toBeTruthy()
     expect(document.title).toContain("All Research")
 
-    await user.click(screen.getByRole("button", { name: /^Design System$/i }))
+    await user.click(screen.getByRole("link", { name: /^Design System$/i }))
     expect(window.location.pathname).toBe("/design-system")
     expect(
       await screen.findByRole("heading", { name: /Component Gallery/i })
@@ -158,7 +158,7 @@ describe("REA Research Blog interactive UX", () => {
   it("renders dedicated interactive body for AgentEnv archive post", async () => {
     const user = userEvent.setup()
     render(<App />)
-    await user.click(screen.getByRole("button", { name: /^All Research$/i }))
+    await user.click(screen.getByRole("link", { name: /^All Research$/i }))
     const heading = await screen.findByRole("heading", {
       name: /AgentEnv: Turning Recorded Captures/i,
     })
@@ -167,7 +167,7 @@ describe("REA Research Blog interactive UX", () => {
       throw new Error("Expected AgentEnv article card")
     }
     await user.click(
-      within(card).getByRole("button", {
+      within(card).getByRole("link", {
         name: /Open interactive post/i,
       })
     )
@@ -204,7 +204,7 @@ describe("REA Research Blog interactive UX", () => {
     const user = userEvent.setup()
     render(<App />)
 
-    await user.click(screen.getByRole("button", { name: /^Design System$/i }))
+    await user.click(screen.getByRole("link", { name: /^Design System$/i }))
     expect(
       await screen.findByRole("heading", { name: /Component Gallery/i })
     ).toBeTruthy()
@@ -252,12 +252,12 @@ describe("REA Research Blog interactive UX", () => {
     ).toBeTruthy()
     expect(screen.getByText("/does-not-exist")).toBeTruthy()
 
-    const allResearchButton = screen
-      .getAllByRole("button", { name: /^All Research$/i })
+    const allResearchLink = screen
+      .getAllByRole("link", { name: /^All Research$/i })
       .at(-1)
-    expect(allResearchButton).toBeTruthy()
-    if (allResearchButton) {
-      await user.click(allResearchButton)
+    expect(allResearchLink).toBeTruthy()
+    if (allResearchLink) {
+      await user.click(allResearchLink)
     }
     expect(window.location.pathname).toBe("/research")
     expect(
