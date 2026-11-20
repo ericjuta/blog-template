@@ -197,7 +197,32 @@ export function App() {
       </header>
 
       <main id="top">
-        {route.kind === "design-system" ? (
+        {route.kind === "not-found" ? (
+          <div className="error-boundary-app">
+            <div className="error-boundary-card">
+              <h1>404: Page not found</h1>
+              <p style={{ overflowWrap: "anywhere" }}>
+                The requested page could not be found: <code>{route.pathname}</code>
+              </p>
+              <div className="error-boundary-actions">
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => navigate({ kind: "index" })}
+                >
+                  All Research
+                </button>
+                <button
+                  type="button"
+                  className="btn"
+                  onClick={() => navigate({ kind: "post", slug: "evidence-first-ui" })}
+                >
+                  Technical Report
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : route.kind === "design-system" ? (
           <ErrorBoundary scope="app" resetKey="design-system">
             <Suspense
               fallback={

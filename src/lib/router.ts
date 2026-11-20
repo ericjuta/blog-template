@@ -8,6 +8,7 @@ export type AppRoute =
   | { kind: "post"; slug: PostSlug }
   | { kind: "index" }
   | { kind: "design-system" }
+  | { kind: "not-found"; pathname: string }
 
 export type RouteMeta = {
   title: string
@@ -27,10 +28,10 @@ export function parseRoute(pathname: string, hash = ""): AppRoute {
   if (path === "/research") {return { kind: "index" }}
   if (path.startsWith("/posts/")) {
     const slug = path.slice("/posts/".length)
-    return isPostSlug(slug) ? { kind: "post", slug } : { kind: "index" }
+    if (isPostSlug(slug)) {return { kind: "post", slug }}
   }
   if (path === "/") {return { kind: "post", slug: "evidence-first-ui" }}
-  return { kind: "index" }
+  return { kind: "not-found", pathname: path }
 }
 
 export function routeToPath(route: AppRoute): string {
@@ -41,11 +42,16 @@ export function routeToPath(route: AppRoute): string {
       return "/design-system"
     case "post":
       return `/posts/${route.slug}`
+    case "not-found":
+      return route.pathname
   }
 }
 
 export function routesEqual(a: AppRoute, b: AppRoute): boolean {
   if (a.kind === "post") {return b.kind === "post" && a.slug === b.slug}
+  if (a.kind === "not-found") {
+    return b.kind === "not-found" && a.pathname === b.pathname
+  }
   return a.kind === b.kind
 }
 
@@ -53,6 +59,12 @@ export function getRouteMeta(route: AppRoute): RouteMeta {
   const canonicalPath = routeToPath(route)
 
   switch (route.kind) {
+    case "not-found":
+      return {
+        title: "404: Page Not Found | REA Research",
+        description: "The requested page could not be found on REA Research.",
+        canonicalPath: "/404",
+      }
     case "index":
       return {
         title: "All Research | REA Research",

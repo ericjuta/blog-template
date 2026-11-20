@@ -9,6 +9,7 @@
     <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="canonical" href="https://askgina-blog.pages.dev/" />
+    <link rel="alternate" type="application/rss+xml" title="REA Research RSS Feed" href="/feed.xml" />
 
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="REA Research" />
@@ -27,6 +28,22 @@
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <main style="max-width: 42rem; margin: 2rem auto; padding: 0 1rem; font: 1rem/1.6 system-ui, sans-serif;">
+        <h1>REA Research</h1>
+        <p>REA Research is an interactive technical blog. Live figures and agent bridges require JavaScript.</p>
+        <nav aria-label="Research, posts, and RSS">
+          <ul>
+            <li><a href="/research">Research index</a></li>
+            <li><a href="/posts/evidence-first-ui">Evidence-First UI</a></li>
+            <li><a href="/posts/dx-ball-sound-pan">DX-Ball Sound Pan</a></li>
+            <li><a href="/posts/notion-clipboard-bridge">Notion Clipboard Bridge</a></li>
+            <li><a href="/posts/agent-environments">Agent Environments</a></li>
+            <li><a href="/feed.xml">REA Research RSS Feed</a></li>
+          </ul>
+        </nav>
+      </main>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

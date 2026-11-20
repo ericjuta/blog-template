@@ -242,6 +242,31 @@ describe("REA Research Blog interactive UX", () => {
     consoleSpy.mockRestore()
   })
 
+  it("renders a 404 view for unknown routes and navigates back to All Research", async () => {
+    const user = userEvent.setup()
+    window.history.replaceState(null, "", "/does-not-exist")
+    render(<App />)
+
+    expect(
+      screen.getByRole("heading", { name: /404: Page not found/i })
+    ).toBeTruthy()
+    expect(screen.getByText("/does-not-exist")).toBeTruthy()
+
+    const allResearchButton = screen
+      .getAllByRole("button", { name: /^All Research$/i })
+      .at(-1)
+    expect(allResearchButton).toBeTruthy()
+    if (allResearchButton) {
+      await user.click(allResearchButton)
+    }
+    expect(window.location.pathname).toBe("/research")
+    expect(
+      screen.getByRole("heading", {
+        name: /Discoveries from Evidence-First Engineering/i,
+      })
+    ).toBeTruthy()
+  })
+
   it("passes axe-core accessibility checks with zero critical or serious violations", async () => {
     const { container } = render(<App />)
     await screen.findByRole("heading", {
