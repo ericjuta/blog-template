@@ -1,5 +1,0 @@
-User-agent: *
-Allow: /
-
-Sitemap: https://askgina-blog.pages.dev/sitemap.xml
-schemamap: https://askgina-blog.pages.dev/schemamap.xml

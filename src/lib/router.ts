@@ -1,8 +1,9 @@
 import { useCallback, useEffect, useState } from "react"
 import { BLOG_POSTS } from '../data/blog-data';
 import type { PostSlug } from '../data/blog-data';
+import { SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN } from "./site.ts"
 
-export const SITE_ORIGIN = "https://askgina-blog.pages.dev"
+export { SITE_ORIGIN } from "./site.ts"
 
 export type AppRoute =
   | { kind: "post"; slug: PostSlug }
@@ -61,20 +62,19 @@ export function getRouteMeta(route: AppRoute): RouteMeta {
   switch (route.kind) {
     case "not-found":
       return {
-        title: "404: Page Not Found | REA Research",
-        description: "The requested page could not be found on REA Research.",
+        title: `404: Page Not Found | ${SITE_NAME}`,
+        description: `The requested page could not be found on ${SITE_NAME}.`,
         canonicalPath: "/404",
       }
     case "index":
       return {
-        title: "All Research | REA Research",
-        description:
-          "Interactive technical reports combining Reverse Engineer Anything (REA) evidence provenance with Vercel UI SDK headless primitives and live agent bridges.",
+        title: `All Research | ${SITE_NAME}`,
+        description: SITE_DESCRIPTION,
         canonicalPath,
       }
     case "design-system":
       return {
-        title: "Design System | REA Research",
+        title: `Design System | ${SITE_NAME}`,
         description:
           "An interactive Vercel UI SDK component gallery showcasing accessible states for REA Research interfaces.",
         canonicalPath,
@@ -83,7 +83,7 @@ export function getRouteMeta(route: AppRoute): RouteMeta {
       const post = BLOG_POSTS.find((entry) => entry.slug === route.slug)
       if (!post) {throw new Error(`Missing blog post: ${route.slug}`)}
       return {
-        title: `${post.title} | REA Research`,
+        title: `${post.title} | ${SITE_NAME}`,
         description: post.subtitle,
         canonicalPath,
       }

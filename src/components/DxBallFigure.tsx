@@ -14,7 +14,7 @@ import {
 import { DXBALL_ASM, DXBALL_C, DXBALL_STEPS } from "../data/blog-data"
 
 /**
- * Reconstructs the verified DX-Ball DirectSound pan calculation:
+ * Simulates the reconstructed DX-Ball DirectSound pan formula in JavaScript:
  * pan = trunc((x * 1.5625 - 500.0) * scale)
  */
 export function computeDxBallPan(x: number, scale = 1): number {
@@ -50,7 +50,7 @@ export function DxBallFigure() {
           </h3>
         </div>
         <span className="pill-badge pill-badge-success">
-          3,205 / 3,205 oracle cases · 63 matching bytes
+          Showcase results: 3,205 / 3,205 oracle cases · 63 matching bytes
         </span>
       </div>
 
@@ -102,12 +102,12 @@ export function DxBallFigure() {
         <div className="code-split">
           <div className="code-pane">
             <div className="code-pane-head">
-              <span>x86 Disassembly (0x406409)</span>
+              <span>x86 Disassembly Excerpt (routine at 0x00406400)</span>
               <span>REA Ghidra</span>
             </div>
-            <pre className="code-lines">
+            <pre className="code-lines" tabIndex={0} role="region" aria-label="DX-Ball x86 disassembly excerpt">
               {DXBALL_ASM.map((line, i) => {
-                const active = currentStep.asmLines.includes(i + 1)
+                const active = currentStep.asmLines.includes(i)
                 return (
                   <div
                     key={i}
@@ -126,9 +126,9 @@ export function DxBallFigure() {
               <span>Reconstructed C (dxball_screen_pan)</span>
               <span>MSVC</span>
             </div>
-            <pre className="code-lines">
+            <pre className="code-lines" tabIndex={0} role="region" aria-label="DX-Ball reconstructed C code">
               {DXBALL_C.map((line, i) => {
-                const active = currentStep.cLines.includes(i + 1)
+                const active = currentStep.cLines.includes(i)
                 return (
                   <div
                     key={i}
@@ -156,19 +156,26 @@ export function DxBallFigure() {
           <div
             style={{
               display: "flex",
+              flexWrap: "wrap",
               justifyContent: "space-between",
               alignItems: "center",
+              gap: "0.4rem",
               marginBottom: "0.5rem",
               fontSize: "0.84rem",
             }}
           >
             <strong style={{ color: "var(--ink)" }}>
-              Interactive Oracle Probe: Ball X Position
+              Reconstructed C Formula Simulator
             </strong>
             <span className="mono" style={{ color: "var(--accent-ink)", fontWeight: 600 }}>
               x = {xPos}px → pan = {panValue} ({panDirection})
             </span>
           </div>
+
+          <p id="pan-simulator-description" style={{ margin: "0 0 0.5rem", fontSize: "0.78rem", color: "var(--ink-muted)" }}>
+            Move the ball horizontally to evaluate the formula in JavaScript at a pan scale of 1.0.
+            The simulator does not execute the original x86 binary.
+          </p>
 
           <Slider
             min={0}
@@ -186,7 +193,7 @@ export function DxBallFigure() {
             <SliderControl>
               <SliderTrack>
                 <SliderIndicator />
-                <SliderThumb aria-label="Ball X coordinate" />
+                <SliderThumb aria-label="Ball X coordinate" aria-describedby="pan-simulator-description" />
               </SliderTrack>
             </SliderControl>
           </Slider>
@@ -237,10 +244,9 @@ export function DxBallFigure() {
       </div>
 
       <figcaption className="figure-caption">
-        Powered by a custom <code>@ui-sdk/core</code> primitive (
-        <code>EvidenceStepper</code>) with roving focus and agent actions{" "}
-        <code>goTo</code>, <code>next</code>, and <code>previous</code>, paired with{" "}
-        <code>@ui-sdk/react/slider</code>. Use Left/Right arrow keys on the step bar.
+        The <code>ev:dxball:*</code> tags are figure step anchors for the published REA 4.1.0
+        DX-Ball 1.07 showcase checkpoint (7 October 2026), not REA Evidence IDs. Use the
+        Left and Right arrow keys to move between steps.
       </figcaption>
     </figure>
   )

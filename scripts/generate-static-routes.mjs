@@ -9,11 +9,9 @@ import { prerender } from "react-dom/static"
 import TurndownService from "turndown"
 import { App } from "../src/App.tsx"
 import { BLOG_POSTS } from "../src/data/blog-data.ts"
-import { parseRoute, SITE_ORIGIN } from "../src/lib/router.ts"
+import { parseRoute } from "../src/lib/router.ts"
+import { DEFAULT_SITE_ORIGIN, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN } from "../src/lib/site.ts"
 
-const SITE_NAME = "REA Research"
-const SITE_DESCRIPTION =
-  "Interactive technical reports combining Reverse Engineer Anything (REA) evidence provenance with Vercel UI SDK headless primitives and live agent bridges."
 const HOME = `${SITE_ORIGIN}/`
 const SITE_IMAGE = `${SITE_ORIGIN}/og-image.png`
 const WEBSITE_ID = `${HOME}#website`
@@ -23,12 +21,32 @@ const RESEARCH_TITLE = "Research Archive"
 const ARD_PATH = "/.well-known/ard.json"
 const DIST = fileURLToPath(new URL("../dist/", import.meta.url))
 
+const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }
+const escapeMarkup = (value) => value.replace(/[&<>"']/g, (character) => entities[character])
 const template = readFileSync(join(DIST, "index.html"), "utf8")
+  .replaceAll(DEFAULT_SITE_ORIGIN, () => escapeMarkup(SITE_ORIGIN))
 const headPattern = /(<head\b[^>]*>)([\s\S]*?)(<\/head\s*>)/i
 if (!headPattern.test(template)) throw new Error("Missing <head> in dist/index.html")
 
 const rootMarker = '<div id="root"></div>'
 if (!template.includes(rootMarker)) throw new Error("Missing empty mount node in the Vite template")
+
+const isoDatePattern = /^\d{4}-\d{2}-\d{2}$/
+const publicationDateFormat = new Intl.DateTimeFormat("en-US", {
+  timeZone: "UTC", month: "long", day: "numeric", year: "numeric",
+})
+
+function toIsoDate(date, slug) {
+  const parsed = new Date(isoDatePattern.test(date) ? date : `${date} UTC`)
+  if (Number.isFinite(parsed.getTime())) {
+    const iso = parsed.toISOString().slice(0, 10)
+    // Reject dates that Date silently rolls over, such as February 30.
+    if (isoDatePattern.test(iso) && (date === iso || date === publicationDateFormat.format(parsed))) {
+      return iso
+    }
+  }
+  throw new Error(`Invalid publication date for ${slug}: ${date}`)
+}
 
 const slugs = new Set()
 const posts = BLOG_POSTS.map((post) => {
@@ -37,15 +55,11 @@ const posts = BLOG_POSTS.map((post) => {
   }
   slugs.add(post.slug)
 
-  const published = new Date(`${post.date} UTC`)
-  if (!Number.isFinite(published.getTime())) {
-    throw new Error(`Invalid publication date for ${post.slug}: ${post.date}`)
-  }
-  return { ...post, published, path: `/posts/${post.slug}`, url: `${SITE_ORIGIN}/posts/${post.slug}` }
+  const lastmod = toIsoDate(post.date, post.slug)
+  const path = `/posts/${post.slug}`
+  return { ...post, lastmod, published: new Date(lastmod), path, url: `${SITE_ORIGIN}${path}` }
 })
 
-const entities = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }
-const escapeMarkup = (value) => value.replace(/[&<>"']/g, (character) => entities[character])
 const serializeJsonLd = (data) =>
   JSON.stringify({ "@context": "https://schema.org", ...data }).replace(/<(\/)?/g, (_, slash) =>
     slash ? "<\\/" : "\\u003c",
@@ -58,7 +72,7 @@ function blogPosting(post) {
     name: post.title,
     headline: post.title,
     description: post.subtitle,
-    datePublished: post.published.toISOString().slice(0, 10),
+    datePublished: post.lastmod,
     author: { "@type": "Organization", name: post.authors },
     articleSection: post.category,
     publisher: { "@id": PUBLISHER_ID },
@@ -106,7 +120,7 @@ function renderPage(route, markup) {
   const { title, description, url, ogType = "website", entity, noindex, markdownPath } = route
   const body = template.replace(rootMarker, () => `<div id="root">${markup}</div>`)
   return body.replace(headPattern, (_, open, head, close) => {
-    const tags = []
+    const tags = [`<meta name="rea-site-origin" content="${escapeMarkup(SITE_ORIGIN)}" />`]
     if (title) {
       head = head
         .replace(/[ \t]*<title\b[^>]*>[\s\S]*?<\/title>[ \t]*\r?\n?/gi, "")
@@ -181,6 +195,16 @@ ${items.join("\n")}
 
 const flagship = posts.find((post) => post.featured)
 if (!flagship) throw new Error("BLOG_POSTS must include a featured post for /")
+const latestLastmod = posts.reduce((latest, post) => post.lastmod > latest ? post.lastmod : latest, flagship.lastmod)
+
+const notFound = {
+  path: "/404",
+  file: "404.html",
+  title: `404: Page Not Found | ${SITE_NAME}`,
+  description: `The requested page could not be found on ${SITE_NAME}.`,
+  url: `${SITE_ORIGIN}/404`,
+  noindex: true,
+}
 
 const pages = [
   {
@@ -206,14 +230,7 @@ const pages = [
     entity: blogPosting(post),
     post,
   })),
-  {
-    path: "/404",
-    file: "404.html",
-    title: `404: Page Not Found | ${SITE_NAME}`,
-    description: "The requested page could not be found on REA Research.",
-    url: `${SITE_ORIGIN}/404`,
-    noindex: true,
-  },
+  notFound,
 ]
 
 function write(relativeFile, contents) {
@@ -288,6 +305,23 @@ for (const route of pages) {
   }
 }
 
+write("404.md", `---
+title: ${JSON.stringify(notFound.title)}
+status: 404
+canonical: ${JSON.stringify(notFound.url)}
+---
+
+# 404: Page Not Found
+
+${notFound.description} Try one of these links:
+
+- [Home / featured report](${HOME})
+- [Research archive](${SITE_ORIGIN}${RESEARCH_PATH})
+- [Machine-readable site index](${HOME}llms.txt)
+- [Research post index](${HOME}posts/llms.txt)
+- [RSS feed](${HOME}feed.xml)
+`)
+
 const sectionIndex = `# ${SITE_NAME}: Research posts
 
 > Technical reports, case studies, and research on evidence-first interfaces and offline agent environments.
@@ -330,6 +364,21 @@ Use this publication to find case studies on evidence provenance and agent-addre
 `)
 write("llms-full.txt", `# ${SITE_NAME}: Collected research posts\n\n${posts.map((post) => markdown.get(post.path)).join("\n---\n\n")}`)
 
+const sitemapEntries = pages.filter((route) => !route.noindex).map((route) => `  <url>
+    <loc>${escapeMarkup(route.url)}</loc>
+    <lastmod>${route.post?.lastmod ?? latestLastmod}</lastmod>
+  </url>`)
+write("sitemap.xml", `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${sitemapEntries.join("\n")}
+</urlset>
+`)
+write("robots.txt", `User-agent: *
+Allow: /
+
+Sitemap: ${HOME}sitemap.xml
+schemamap: ${HOME}schemamap.xml
+`)
 write("feed.xml", renderFeed(posts))
 write("schemamap.xml", `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:sf="http://schema.org/schemas/schemafeed/0.1">
@@ -365,9 +414,11 @@ write(ARD_PATH.slice(1), `${JSON.stringify({
 }, null, 2)}\n`)
 const skillName = "read-rea-research"
 const skillPath = `/.well-known/agent-skills/${skillName}/SKILL.md`
-const skill = readFileSync(join(DIST, skillPath.slice(1)))
-const description = /^description: (.+)$/m.exec(skill.toString("utf8"))?.[1]
+const skillFile = skillPath.slice(1)
+const skill = readFileSync(join(DIST, skillFile), "utf8").replaceAll(DEFAULT_SITE_ORIGIN, () => SITE_ORIGIN)
+const description = /^description: (.+)$/m.exec(skill)?.[1]
 if (!description) throw new Error(`Missing description in ${skillPath}`)
+write(skillFile, skill)
 write(".well-known/agent-skills/index.json", `${JSON.stringify({
   skills: [{
     name: skillName,
@@ -377,4 +428,4 @@ write(".well-known/agent-skills/index.json", `${JSON.stringify({
     digest: `sha256:${createHash("sha256").update(skill).digest("hex")}`,
   }],
 }, null, 2)}\n`)
-console.log(`Generated ${pages.length} HTML pages, ${markdown.size} Markdown alternates, and discovery files in dist/.`)
+console.log(`Generated ${pages.length} HTML pages, ${markdown.size + 1} Markdown files, and discovery files in dist/.`)

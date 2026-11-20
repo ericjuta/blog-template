@@ -65,9 +65,9 @@ export function NotionIpcFigure() {
                   <div className="code-pane">
                     <div className="code-pane-head">
                       <span>{hop.file}</span>
-                      <span>Source</span>
+                      <span>Adapted excerpt</span>
                     </div>
-                    <pre className="code-lines">
+                    <pre className="code-lines" tabIndex={0} role="region" aria-label={`${hop.file} source excerpt`}>
                       {hop.code.split("\n").map((line: string, i: number) => (
                         <div key={i} className="code-line">
                           <span className="code-line-no">{i + 1}</span>
@@ -82,7 +82,7 @@ export function NotionIpcFigure() {
                       <span>REA Static Observation</span>
                       <span>{hop.process}</span>
                     </div>
-                    <pre className="code-lines">
+                    <pre className="code-lines" tabIndex={0} role="region" aria-label={`${hop.process} static observation`}>
                       {hop.reaOutput.split("\n").map((line: string, i: number) => (
                         <div key={i} className="code-line">
                           <span className="code-line-no">{i + 1}</span>
@@ -99,8 +99,9 @@ export function NotionIpcFigure() {
       </div>
 
       <figcaption className="figure-caption">
-        Uses <code>@ui-sdk/react/tabs</code> to walk through each Electron boundary from
-        renderer preload to the sender-checked <code>ipcMain.handle</code> sink.
+        The desktop IPC findings come from <code>app.asar</code> in the published REA 4.1.0
+        Notion Desktop 7.6.1 showcase. The virtual-clipboard format comes from separate
+        probes of web assets cached on July 13, 2026.
       </figcaption>
     </figure>
   )

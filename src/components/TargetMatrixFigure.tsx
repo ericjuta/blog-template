@@ -92,7 +92,12 @@ export function TargetMatrixFigure() {
           </span>
         </div>
 
-        <div style={{ overflowX: "auto", marginBottom: "1.5rem" }}>
+        <div
+          role="region"
+          aria-label="REA target capability matrix"
+          tabIndex={0}
+          style={{ overflowX: "auto", marginBottom: "1.5rem" }}
+        >
           <table className="data-table">
             <thead>
               <tr>
@@ -128,16 +133,17 @@ export function TargetMatrixFigure() {
 
         <div id="investigation-waterfall" style={{ marginBottom: "0.5rem" }}>
           <div style={{ fontWeight: 600, fontSize: "0.9rem", color: "var(--ink)" }}>
-            Sample Investigation Trace (DX-Ball 940 ms Session)
+            Illustrative Investigation Trace (Synthetic 940 ms DX-Ball Timeline)
           </div>
           <div style={{ fontSize: "0.82rem", color: "var(--ink-muted)" }}>
-            Select any span row (or use Up/Down arrow keys) to inspect its phase notes.
+            Five spans with illustrative timings, not measured host latency. Select a span or use
+            the Up and Down arrow keys to read its phase notes.
           </div>
         </div>
 
-        <div className="waterfall-grid">
+        <div className="waterfall-grid" tabIndex={0} role="region" aria-label="Investigation trace timeline">
           <Waterfall
-            aria-label="DX-Ball REA investigation trace waterfall"
+            aria-label="Illustrative DX-Ball investigation trace waterfall"
             items={INVESTIGATION_SPANS}
             defaultExpanded={["session"]}
             value={selectedSpan}
@@ -181,8 +187,8 @@ export function TargetMatrixFigure() {
       </div>
 
       <figcaption className="figure-caption">
-        Uses <code>@ui-sdk/react/input</code>, <code>@ui-sdk/react/segmented-control</code>,
-        and <code>@ui-sdk/react/waterfall</code> (accessible treegrid timeline).
+        The synthetic millisecond durations demonstrate <code>@ui-sdk/react/waterfall</code>.
+        They are not measured host benchmarks.
       </figcaption>
     </figure>
   )

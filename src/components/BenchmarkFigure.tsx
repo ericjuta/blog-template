@@ -5,8 +5,8 @@ import {
   SegmentedControlItem,
 } from "@ui-sdk/react/segmented-control"
 import { Switch, SwitchThumb } from "@ui-sdk/react/switch"
-import { UI_SDK_BENCHMARKS } from '../data/blog-data';
-import type { BenchmarkMetricKey, BenchmarkRow } from '../data/blog-data';
+import { REFERENCES, UI_SDK_BENCHMARKS } from "../data/blog-data"
+import type { BenchmarkMetricKey, BenchmarkRow } from "../data/blog-data"
 
 const METRIC_META: Record<
   BenchmarkMetricKey,
@@ -20,28 +20,28 @@ const METRIC_META: Record<
 > = {
   tokensK: {
     label: "Tokens",
-    subtitle: "Median total tokens in thousands across 3 runs (lower is better)",
+    subtitle: "Median total tokens reported by Claude Code, in thousands (lower is better)",
     format: (v) => `${v.toFixed(1)}k`,
     getBase: (r) => r.competitorTokensK,
     getBridge: (r) => r.uiSdkTokensK,
   },
   toolCalls: {
     label: "Tool calls",
-    subtitle: "Median tool invocations per task across 3 runs (lower is better)",
+    subtitle: "Median tool invocations per task (lower is better)",
     format: (v) => `${v} calls`,
     getBase: (r) => r.competitorToolCalls,
     getBridge: (r) => r.uiSdkToolCalls,
   },
   timeSec: {
     label: "Wall time",
-    subtitle: "Median end-to-end completion time in seconds (lower is better)",
+    subtitle: "Median seconds from agent start to its last message (lower is better)",
     format: (v) => `${v} s`,
     getBase: (r) => r.competitorTimeSec,
     getBridge: (r) => r.uiSdkTimeSec,
   },
   costUsd: {
     label: "Cost",
-    subtitle: "Median API cost in USD across 3 runs (lower is better)",
+    subtitle: "Median cost reported by Claude Code, in USD (lower is better)",
     format: (v) => `$${v.toFixed(3)}`,
     getBase: (r) => r.competitorCostUsd,
     getBridge: (r) => r.uiSdkCostUsd,
@@ -54,6 +54,7 @@ export function BenchmarkFigure() {
   const [showDelta, setShowDelta] = useState(true)
 
   const meta = METRIC_META[metric]
+  const source = REFERENCES[0]
   const maxRaw = Math.max(
     ...UI_SDK_BENCHMARKS.flatMap((row) => [meta.getBase(row), meta.getBridge(row)])
   )
@@ -73,6 +74,9 @@ export function BenchmarkFigure() {
           <h3 id="fig-bench-title" className="figure-title">
             Browser-Only vs. UI SDK Agent Bridge (3-Run Medians)
           </h3>
+          <div style={{ fontSize: "0.84rem", color: "var(--ink-secondary)" }}>
+            Vercel UI SDK project settings screen benchmark · Claude Code + Sonnet
+          </div>
         </div>
 
         <SegmentedControl
@@ -248,9 +252,11 @@ export function BenchmarkFigure() {
       </div>
 
       <figcaption className="figure-caption">
-        Modeled after SID-2 Technical Report interactive charts. Controls use{" "}
-        <code>@ui-sdk/react/segmented-control</code> and <code>@ui-sdk/react/switch</code>{" "}
-        and are directly inspectable and actionable via the Agent Console.
+        Source: Vercel UI SDK’s published project settings screen benchmark at{" "}
+        <a href={source.url} target="_blank" rel="noreferrer">{source.label}</a> (
+        <code>vercel-labs/ui</code>, <code>benchmarks/agent</code>). Each result is the median
+        of three runs with Claude Code + Sonnet. React deltas use Base UI with browser tools,
+        the stronger of the two published React baselines.
       </figcaption>
     </figure>
   )

@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { registerResearchTools } from "./research-webmcp"
+import { SITE_ORIGIN } from "./site.ts"
 
 afterEach(() => {
   Reflect.deleteProperty(document, "modelContext")
@@ -25,7 +26,7 @@ describe("research WebMCP tool", () => {
     expect(signal.aborted).toBe(false)
     expect(await tool.execute({})).toEqual({ posts: expect.any(Array) })
     expect(await tool.execute({ query: "AgentEnv offline" })).toEqual({ posts: [
-      expect.objectContaining({ title: expect.stringContaining("AgentEnv"), markdownUrl: expect.stringMatching(/\/agent-environments\.md$/) }),
+      expect.objectContaining({ title: expect.stringContaining("AgentEnv"), markdownUrl: `${SITE_ORIGIN}/posts/agent-environments.md` }),
     ] })
     expect(await tool.execute({ query: "not-a-research-topic" })).toEqual({ posts: [] })
     dispose?.()
@@ -50,7 +51,7 @@ describe("research WebMCP tool", () => {
     expect(await read.execute({ slug: "https://unrelated.example" })).toEqual({ error: expect.stringContaining("Unknown article") })
     expect(fetchFixture).not.toHaveBeenCalled()
     expect(await read.execute({ slug: "agent-environments" })).toEqual({
-      url: "https://askgina-blog.pages.dev/posts/agent-environments", markdown: "# Published article",
+      url: `${SITE_ORIGIN}/posts/agent-environments`, markdown: "# Published article",
     })
     expect(fetchFixture).toHaveBeenCalledWith("/posts/agent-environments.md", expect.objectContaining({ redirect: "error" }))
     dispose?.()

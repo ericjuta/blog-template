@@ -435,14 +435,15 @@ export function App({ initialRoute }: { initialRoute?: AppRoute }) {
                       <Sidenote
                         num={3}
                         label="Showcase scope"
-                        note="Checkpoint 7 Oct 2026: 63 compiled x86 bytes matched across 3,205 oracle comparisons against the original DX-Ball 1.07 routine."
+                        note="DX-Ball 1.07 checkpoint, 7 October 2026 (REA 4.1.0): 3,205 oracle comparisons checked return values. A separate VC4.0 replay matched 63 compiled bytes."
                         refNum={3}
                       />, REA traces the x86 DirectSound pan routine at{" "}
-                      <code>0x406409</code> through five evidence-backed steps: loading the
-                      ball’s horizontal coordinate, multiplying by <code>1.5625</code>,
-                      subtracting <code>500.0</code>, scaling, and truncating via{" "}
-                      <code>__ftol</code>. Step through the assembly and probe the live oracle
-                      below.
+                      <code>0x00406400</code>. At <code>0x406409</code>,{" "}
+                      <code>MOV EAX, [EBP+0x8]</code> loads the horizontal coordinate. The routine
+                      then multiplies by <code>1.5625</code>, subtracts <code>500.0</code>,
+                      applies the pan scale, and truncates via <code>__ftol</code>. Step through
+                      the assembly and probe the reconstructed pan formula below. The browser
+                      runs the formula in JavaScript, not the original x86 binary.
                     </p>
                     <LazyFigure title="DX-Ball Sound-Panning" slug={currentPost.slug}>
                       <DxBallFigure />
@@ -457,12 +458,12 @@ export function App({ initialRoute }: { initialRoute?: AppRoute }) {
                       <Sidenote
                         num={4}
                         label="Benchmark caveat"
-                        note="Reported 3-run medians measure the settings-screen agent bridge benchmark. Efficiency gains come from structured snapshot()/act() calls, not raw browser DOM scraping."
+                        note="Vercel Labs reports three-run medians for one project settings task. The benchmark compares the agent bridge with browser tools that read the accessibility tree and then click or type."
                         refNum={1}
                       />. Because every control registers with <code>createAgent()</code>, an
-                      agent can inspect and drive the exact same figures a human reader
-                      uses, cutting token consumption and tool calls compared to raw browser
-                      automation.
+                      agent can inspect and drive the same figures a human reader uses. The
+                      published benchmark below measures the bridge on a separate task, not on
+                      this blog or on REA investigations.
                     </p>
                     <LazyFigure title="Agent Bridge Benchmarks" slug={currentPost.slug}>
                       <BenchmarkFigure />
@@ -474,11 +475,11 @@ export function App({ initialRoute }: { initialRoute?: AppRoute }) {
                       </CollapsibleTrigger>
                       <CollapsiblePanel>
                         <div className="collapsible-panel-inner">
-                          All benchmark numbers reflect three-run medians from the Vercel UI SDK
-                          agent bridge evaluation comparing browser-only automation against
-                          structured <code>snapshot()</code> / <code>act()</code> calls. Open
-                          the <strong>Agent Console</strong> in the top bar to run live bridge
-                          actions against this page.
+                          Vercel Labs used Sonnet through Claude Code for the same project
+                          settings task across React, Vue, and Svelte. The chart uses the
+                          published three-run medians from <code>vercel-labs/ui</code> (
+                          <code>benchmarks/agent</code>). To try the bridge on this page, open
+                          the <strong>Agent Console</strong> in the top bar.
                         </div>
                       </CollapsiblePanel>
                     </Collapsible>
@@ -492,7 +493,7 @@ export function App({ initialRoute }: { initialRoute?: AppRoute }) {
                       <Sidenote
                         num={5}
                         label="Provenance split"
-                        note="REA 4.1.0 located preload API and ipcMain ranges statically in app.asar; separate cached web-asset probes are explicitly marked as non-desktop captures."
+                        note="REA 4.1.0 located the exposed API and renderer IPC call in the desktop preload. The clipboard format comes from separate cached web-asset probes."
                         refNum={4}
                       />{" "}
                       maps the full trust boundary from renderer preload wrappers to the
@@ -518,8 +519,8 @@ export function App({ initialRoute }: { initialRoute?: AppRoute }) {
                       <Sidenote
                         num={7}
                         label="Illustrative trace"
-                        note="The 940 ms waterfall below illustrates a typical 7-call DX-Ball session structure for interactive exploration; real timings vary by host and engine warm-up."
-                        refNum={5}
+                        note="The 5-span DX-Ball walkthrough follows the published showcase. Its 940 ms timeline uses synthetic timings, not measured host latency."
+                        refNum={3}
                       />.
                     </p>
                     <LazyFigure title="Target Capability Matrix" slug={currentPost.slug}>
@@ -538,25 +539,26 @@ export function App({ initialRoute }: { initialRoute?: AppRoute }) {
                     <Sidenote
                       num={1}
                       label="Calling convention"
-                      note="The ball X coordinate arrives via a hidden caller stack slot; caller disassembly at 0x411f40 was required to recover the parameter boundary."
+                      note="The initial pseudocode misses the stack input at [EBP+0x8]. The brick-hit caller at 0x411f40 passes 20 + 30 * tile_x."
                       refNum={3}
                     />, yet recovering its exact C implementation requires reconciling caller
-                    disassembly, raw memory reads of <code>.rdata</code> constants, and 3,205
-                    oracle comparisons.
+                    disassembly, raw memory reads, and 3,205 oracle comparisons. The published
+                    7 October 2026 checkpoint reports 55 maintained C functions, 45,380
+                    comparisons with original code, and 33 functions with matching compiled bytes.
                   </div>
 
                   <section id="dx-disassembly" className="article-section">
                     <h2>63 Bytes at 0x00406400</h2>
                     <p>
-                      Every step below is bound to an immutable REA Evidence ID
+                      The steps below follow the published REA 4.1.0 showcase
                       <Sidenote
                         num={2}
                         label="Float constants"
-                        note="Raw .rdata reads resolved 1.5625 (0x420068) and 500.0 (0x4210a0) directly from the binary rather than relying on decompiler approximations."
+                        note="Byte reads established 1.5625 (0x420068), 500.0 (0x420070), and the initial pan_scale of 1.0 (0x4210a0)."
                         refNum={3}
-                      />. Walk through the five transitions from the hidden stack input to the
-                      final <code>__ftol</code> truncation and test arbitrary ball X
-                      coordinates against the DirectSound pan formula.
+                      />. Walk through the five steps from the stack input to the final{" "}
+                      <code>__ftol</code> truncation. The slider simulates the reconstructed C
+                      formula in JavaScript at a pan scale of 1.0. It does not run the x86 oracle.
                     </p>
                     <LazyFigure title="DX-Ball Sound-Panning" slug={currentPost.slug}>
                       <DxBallFigure />
@@ -566,15 +568,17 @@ export function App({ initialRoute }: { initialRoute?: AppRoute }) {
                   <section id="dx-verification" className="article-section">
                     <h2>Oracle Verification &amp; Investigation Trace</h2>
                     <p>
-                      After reconstructing the C expression, REA’s verification harness ran
-                      3,205 input combinations against the original x86 binary and confirmed
-                      all 63 compiled bytes match
+                      REA 4.1.0 supplied the instructions, caller information, and byte reads.
+                      The <code>N0zoM1z0/dx-ball</code> project compared the C and original x86
+                      return values for all 3,205 cases: integer x from 0 to 640 at pan scales
+                      0, 0.5, 1, 20, and −1. A separate VC4.0 compiler replay matched all 63 bytes
                       <Sidenote
                         num={3}
                         label="Byte-exact proof"
-                        note="Verification compares both functional outputs across 3,205 inputs and the exact 63-byte compiled machine-code footprint."
+                        note="The replay matches the function at 0x406400–0x40643e after applying reviewed relocations and checking the referenced constants."
                         refNum={3}
-                      />. Inspect the illustrative tool latency trace below.
+                      />. The waterfall below uses a synthetic 5-span timeline to show the
+                      sequence of steps. Its 940 ms duration is not measured latency telemetry.
                     </p>
                     <LazyFigure title="Target Capability Matrix" slug={currentPost.slug}>
                       <TargetMatrixFigure />
@@ -602,12 +606,12 @@ export function App({ initialRoute }: { initialRoute?: AppRoute }) {
                   <section id="notion-hops" className="article-section">
                     <h2>Four-Hop IPC Trace</h2>
                     <p>
-                      Select each hop to inspect the exact bundle excerpt, REA static
+                      Select each hop to inspect the adapted bundle excerpt, REA static
                       observation, and provenance boundary
                       <Sidenote
                         num={2}
                         label="Evidence boundary"
-                        note="Preload and ipcMain ranges come from Notion Desktop 7.6.1 app.asar; wrapper glue was connected by reading bundled code, distinct from cached web probes."
+                        note="The preload API and invoke ranges come from Notion Desktop 7.6.1 app.asar. The showcase follows the wrappers in the bundled desktop code, separately from the cached web probes."
                         refNum={4}
                       />, distinguishing verified desktop archive reads from separate cached
                       web-asset probes.
@@ -621,15 +625,14 @@ export function App({ initialRoute }: { initialRoute?: AppRoute }) {
                     <h2>Sender Trust Boundary</h2>
                     <p>
                       Before touching Electron’s native <code>clipboard.write</code>, the main
-                      process validates the IPC sender frame via{" "}
+                      process checks the sender WebContents with{" "}
                       <code>isNotionWebContents(event.sender)</code>
                       <Sidenote
                         num={3}
                         label="Trust gate"
-                        note="Sender validation runs in the privileged main process prior to any OS clipboard mutation, blocking arbitrary renderer frames."
+                        note="The guard checks event.sender in the privileged main process before forwarding the clipboard data."
                         refNum={4}
-                      />. Untrusted frames are rejected before any OS clipboard mutation
-                      occurs.
+                      />. If the check fails, the handler returns without calling the clipboard API.
                     </p>
                   </section>
                 </>
@@ -655,13 +658,13 @@ export function App({ initialRoute }: { initialRoute?: AppRoute }) {
                   <section id="env-pipeline" className="article-section">
                     <h2>Offline RL Pipeline</h2>
                     <p>
-                      Step through the four stages (Capture, Compile, Replay, and Grade) to see
-                      how REA pins network responses by SHA-256 digest and isolates agent
-                      rollouts from external systems
+                      Step through the four stages (Capture, Compile, Replay, and Grade) in this
+                      simulated walkthrough of <code>capture_browser_scenario</code> and{" "}
+                      <code>export_environment_bundle</code>
                       <Sidenote
                         num={2}
                         label="Interactive illustration"
-                        note="The pipeline explorer below is an illustrative walkthrough of the four stages; toggling zero-egress updates the simulated replay preview."
+                        note="The CLI invocations and JSON are examples, not live output. The zero-egress switch changes only the preview state."
                         refNum={2}
                       />.
                     </p>
@@ -673,13 +676,13 @@ export function App({ initialRoute }: { initialRoute?: AppRoute }) {
                   <section id="env-benchmarks" className="article-section">
                     <h2>Agent Bridge Efficiency</h2>
                     <p>
-                      Pairing deterministic offline environments with Vercel UI SDK’s{" "}
-                      <code>snapshot()</code> and <code>act()</code> bridge eliminates DOM
-                      scraping overhead during rollouts
+                      Vercel UI SDK’s <code>snapshot()</code> and <code>act()</code> give agents
+                      a structured alternative to browser automation. The chart shows the
+                      published project settings benchmark, not an AgentEnv rollout benchmark
                       <Sidenote
                         num={3}
                         label="Bridge savings"
-                        note="Three-run median numbers from the Vercel UI SDK settings-screen evaluation; gains come from structured tool calls rather than pixel/DOM loops."
+                        note="Vercel Labs reports medians from three runs per configuration with Sonnet through Claude Code. The browser-tool baselines use accessibility-tree reads and browser interactions."
                         refNum={1}
                       />.
                     </p>

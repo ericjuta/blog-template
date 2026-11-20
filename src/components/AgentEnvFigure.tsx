@@ -57,7 +57,7 @@ const STAGES: Record<EnvStage, StageSpec> = {
   replay: {
     id: "replay",
     label: "3. Replay",
-    command: "agent.act([{ ref: 'orders-table', action: 'cancel', args: ['ord_42'] }])",
+    command: "agent.act({ steps: [{ ref: 'orders-table', action: 'cancel', args: { id: 'ord_42' } }] })",
     summary:
       "Run coding agents against the local harness via Vercel UI SDK snapshot()/act() or MCP tools. Agents explore, fail, and retry with zero production risk.",
     inputShape: "Agent policy + UI SDK / WebMCP bridge",
@@ -74,7 +74,7 @@ const STAGES: Record<EnvStage, StageSpec> = {
   grade: {
     id: "grade",
     label: "4. Grade",
-    command: "rea verify_reconstruction --spec ./task-spec.json",
+    command: "Compare the recorded state with the task spec",
     summary:
       "Score the trajectory against exact terminal state assertions and residual-unknown checks. Only byte-stable, reproducible runs pass the gate.",
     inputShape: "Trajectory + final state + task spec",
@@ -94,15 +94,15 @@ const STAGE_ORDER: Array<EnvStage> = ["capture", "compile", "replay", "grade"]
 
 export function AgentEnvFigure() {
   const [stage, setStage] = useState<EnvStage>("capture")
-  const [strictDeterminism, setStrictDeterminism] = useState(true)
+  const [zeroEgressPreview, setZeroEgressPreview] = useState(true)
 
   const current = STAGES[stage]
 
   return (
-    <figure className="figure-card" aria-label="AgentEnv offline RL pipeline explorer">
+    <figure className="figure-card" aria-label="Simulated AgentEnv offline RL pipeline">
       <div className="figure-header">
         <div>
-          <p className="figure-kicker">Interactive Figure · AgentEnv Pipeline</p>
+          <p className="figure-kicker">Illustrative Figure · AgentEnv Pipeline (Simulated Walkthrough)</p>
           <h3 className="figure-title">From Recorded Capture to Deterministic Offline Harness</h3>
         </div>
         <div className="figure-controls">
@@ -125,13 +125,13 @@ export function AgentEnvFigure() {
 
           <label className="switch-label">
             <Switch
-              checked={strictDeterminism}
-              onCheckedChange={setStrictDeterminism}
-              aria-label="Enforce zero-egress determinism"
+              checked={zeroEgressPreview}
+              onCheckedChange={setZeroEgressPreview}
+              aria-label="Preview zero-egress mode"
             >
               <SwitchThumb />
             </Switch>
-            <span>Zero-egress mode</span>
+            <span>Zero-egress preview</span>
           </label>
         </div>
       </div>
@@ -149,29 +149,36 @@ export function AgentEnvFigure() {
             <div style={{ fontSize: "0.88rem", marginTop: "0.2rem" }}>{current.outputShape}</div>
           </div>
           <div className="metric-tile" style={{ padding: "0.75rem", border: "1px solid var(--border)", borderRadius: "8px", background: "var(--bg-subtle)" }}>
-            <div className="mono" style={{ fontSize: "0.72rem", color: "var(--ink-muted)" }}>SIDE EFFECTS</div>
-            <div style={{ fontSize: "0.88rem", marginTop: "0.2rem", color: strictDeterminism ? "var(--accent-ink)" : "var(--ink)" }}>
-              {strictDeterminism ? current.sideEffects : "Live passthrough enabled (unsafe for RL)"}
+            <div className="mono" style={{ fontSize: "0.72rem", color: "var(--ink-muted)" }}>SIMULATED SIDE EFFECTS</div>
+            <div style={{ fontSize: "0.88rem", marginTop: "0.2rem", color: zeroEgressPreview ? "var(--accent-ink)" : "var(--ink)" }}>
+              {zeroEgressPreview ? current.sideEffects : "Preview of a configuration that allows live requests"}
             </div>
           </div>
         </div>
 
         <div className="code-pane">
           <div className="code-pane-head">
-            <span className="mono">{current.command}</span>
+            <span className="mono">Example: {current.command}</span>
             <span className="pill-badge pill-badge-neutral">
-              {strictDeterminism ? "deterministic" : "passthrough"}
+              Example JSON
             </span>
           </div>
-          <pre style={{ margin: 0, padding: "0.9rem 1rem", overflowX: "auto", fontSize: "0.82rem", color: "var(--ink-code)" }}>
+          <pre
+            tabIndex={0}
+            role="region"
+            aria-label={`${current.label} sample payload`}
+            style={{ margin: 0, padding: "0.9rem 1rem", overflowX: "auto", fontSize: "0.82rem", color: "var(--ink-code)" }}
+          >
             <code>{current.samplePayload}</code>
           </pre>
         </div>
       </div>
 
       <figcaption className="figure-caption">
-        Every stage is inspectable via <code>blogAgent.snapshot()</code>. Toggle between stages or
-        flip zero-egress mode to see how REA isolates agent rollouts from live systems.
+        The CLI invocations, JSON payloads, and zero-egress toggle illustrate REA’s{" "}
+        <code>capture_browser_scenario</code> / <code>export_environment_bundle</code> workflow.
+        Toggling zero-egress changes only the preview state. The figure does not run commands,
+        change network settings, or send live requests.
       </figcaption>
     </figure>
   )

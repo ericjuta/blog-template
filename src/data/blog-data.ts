@@ -29,14 +29,14 @@ export const BLOG_POSTS: Array<BlogPostMeta> = [
     readTime: "12 min read",
     title: "Evidence-First Interfaces: Pairing REA with Vercel UI SDK",
     subtitle:
-      "How a 229-tool reverse-engineering MCP server and a behavior-level UI SDK eliminate DOM scraping, expose typed evidence graphs, and cut agent token cost by 76%.",
+      "How REA evidence and Vercel UI SDK controls work together, plus a published settings-screen benchmark where the bridge used 76% fewer tokens than Base UI with browser tools.",
     authors: "REA Research × UI Systems",
     featured: true,
     artwork: "moire",
     metrics: [
       { label: "REA MCP tools", value: "229" },
       { label: "Fewer tokens (React)", value: "76%" },
-      { label: "Fewer tool calls", value: "59%" },
+      { label: "Fewer tool calls (React)", value: "59%" },
       { label: "Target classes", value: "40+" },
     ],
   },
@@ -53,8 +53,8 @@ export const BLOG_POSTS: Array<BlogPostMeta> = [
     artwork: "silicon",
     metrics: [
       { label: "Maintained C functions", value: "55" },
-      { label: "Oracle comparisons", value: "45,380" },
-      { label: "Exact byte matches", value: "33" },
+      { label: "Comparisons with original code", value: "45,380" },
+      { label: "Functions with matching bytes", value: "33" },
       { label: "Function bytes", value: "63 B" },
     ],
   },
@@ -274,7 +274,7 @@ export const DXBALL_STEPS: Array<DxBallStep> = [
     asmLines: [0, 1, 2],
     cLines: [0, 1],
     explanation:
-      "The initial pseudocode emitted FUN_00406400(void), hiding the parameter. REA's instruction view exposes [EBP+0x8] loaded via FILD, and following caller 0x411f40 proves x = 20 + 30 * tile_x.",
+      "The initial pseudocode declared FUN_00406400(void), hiding the parameter. The instructions load x from [EBP+0x8] and convert it with FILD. Caller 0x411f40 passes x = 20 + 30 * tile_x.",
     evidenceId: "ev:dxball:fn:0x406400",
   },
   {
@@ -295,11 +295,11 @@ export const DXBALL_STEPS: Array<DxBallStep> = [
     number: "03",
     title: "Center around screen x = 320",
     reaTool: "read_bytes",
-    reaQuery: '{ "address": "0x420070", "length": 8 }',
+    reaQuery: '{ "address": "0x420068", "length": 16 }',
     asmLines: [4],
     cLines: [3],
     explanation:
-      "FSUB subtracts the adjacent double at 0x420070 (0000000000407f40 → 500.0). At x = 320, 320 × 1.5625 − 500.0 equals 0.0 (dead center).",
+      "The second double in the same byte read is at 0x420070 (0000000000407f40 → 500.0). FSUB subtracts it, so at x = 320 the offset is zero.",
     evidenceId: "ev:dxball:mem:0x420070",
     decodedConstant: "0000000000407f40 → 500.0",
   },
@@ -320,12 +320,12 @@ export const DXBALL_STEPS: Array<DxBallStep> = [
     id: "step-05",
     number: "05",
     title: "Truncate via __ftol and verify 63 bytes",
-    reaTool: "verify_reconstruction",
-    reaQuery: '{ "cases": 3205, "toolchain": "VC4.0" }',
+    reaTool: "dx-ball oracle + VC4.0 replay",
+    reaQuery: "x in [0..640], scale in {0, 0.5, 1, 20, -1} (3,205 cases)",
     asmLines: [6, 7],
     cLines: [5, 6],
     explanation:
-      "CALL 0x0041678c invokes __ftol to return a 32-bit integer. Recompiling with VC4.0 matches all 63 original bytes and passes 3,205 differential x86 oracle cases.",
+      "REA identifies the call to __ftol. The N0zoM1z0/dx-ball project compares C and original x86 return values in 3,205 cases. Its separate VC4.0 replay matches all 63 original bytes after applying reviewed relocations and checking the constants.",
     evidenceId: "ev:dxball:verify:3205",
   },
 ]
@@ -385,9 +385,9 @@ export const NOTION_HOPS: Array<NotionHop> = [
     file: "main/index.js",
     location: "isNotionWebContents(event.sender)",
     summary:
-      "Before writing text + HTML with the <!-- notionvc: copy-id --> marker, the main process verifies the sender WebContents.",
+      "The main process checks the sender WebContents before passing the data to Electron's clipboard API. The <!-- notionvc: <copy-id> --> marker and text/_notion-blocks-v3-production format come from separate probes of web assets cached on July 13, 2026, not from app.asar.",
     reaOutput:
-      'guard: "isNotionWebContents(event.sender)"\nsink: "electron.clipboard.write(data)"\nvirtual_clipboard: "text/_notion-blocks-v3-production"',
+      'guard: "isNotionWebContents(event.sender)"\nsink: "electron.clipboard.write(data)"\nprovenance: "app.asar (Notion 7.6.1)"',
     code: `handleRequestFromRenderer.addListener(\n  "notion:clipboard:write",\n  (event, data) =>\n    isNotionWebContents(event.sender)\n      ? clipboard.write(data)\n      : undefined\n);`,
   },
 ]
@@ -501,7 +501,7 @@ export const INVESTIGATION_SPANS = [
     label: "rea: dx-ball investigation",
     start: 0,
     duration: 940,
-    meta: "5 calls · 100% cited",
+    meta: "5 illustrative spans",
     children: [
       {
         value: "open",
@@ -526,37 +526,37 @@ export const INVESTIGATION_SPANS = [
       },
       {
         value: "read-mem",
-        label: "read_bytes(0x420068, 0x4210a0)",
+        label: "Read pan constants and initial scale",
         start: 590,
         duration: 90,
-        meta: "1.5625, 500, 1.0",
+        meta: "1.5625, 500.0, 1.0",
       },
       {
         value: "ui-act",
-        label: "ui-sdk: agent.act(verify)",
+        label: "UI review: x86 oracle + VC4.0 replay",
         start: 695,
         duration: 245,
-        meta: "3,205 cases pass",
+        meta: "Published results: 3,205 cases pass, 63 bytes match",
       },
     ],
   },
 ]
 
 export const INVESTIGATION_META = {
-  session: { phase: "End-to-end", note: "940 ms total" },
+  session: { phase: "End-to-end", note: "940 ms illustrative timeline" },
   open: { phase: "Bind", note: "SHA-256 pinned" },
   "fn-pan": { phase: "Static", note: "Revealed [EBP+8]" },
   "fn-caller": { phase: "Static", note: "Brick hit caller" },
   "read-mem": { phase: "Data", note: "3 IEEE doubles" },
-  "ui-act": { phase: "UI SDK", note: "7 tool calls total" },
+  "ui-act": { phase: "UI SDK", note: "Illustrative replay step (not live telemetry)" },
 } satisfies Record<string, { phase: string; note: string }>
 
 export const REFERENCES = [
   {
     num: 1,
-    cite: "Vercel Labs (2026). “Introducing UI SDK: A library of behaviors to build your components. Made for agents.”",
-    url: "https://github.com/vercel-labs/ui",
-    label: "github.com/vercel-labs/ui",
+    cite: "Vercel Labs (2026). UI SDK agent docs, project settings screen benchmark (vercel-labs/ui, benchmarks/agent).",
+    url: "https://ui-sdk.dev/docs/agents",
+    label: "ui-sdk.dev/docs/agents",
   },
   {
     num: 2,
@@ -566,20 +566,20 @@ export const REFERENCES = [
   },
   {
     num: 3,
-    cite: "REA Showcase (2026). “Rebuilding DX-Ball 1.07 from its executable: sound panning reconstruction & 3,205 oracle checks.”",
+    cite: "REA Showcase. DX-Ball 1.07 project checkpoint, 7 October 2026 (REA 4.1.0).",
     url: "https://rea.tools/showcase/dx-ball/",
     label: "rea.tools/showcase/dx-ball",
   },
   {
     num: 4,
-    cite: "REA Showcase (2026). “How Notion Desktop 7.6.1 copies text and HTML across its Electron preload/IPC bridge.”",
+    cite: "REA Showcase (2026). Notion Desktop 7.6.1 clipboard IPC trace (REA 4.1.0) and separate cached web-asset probes.",
     url: "https://rea.tools/showcase/notion/",
     label: "rea.tools/showcase/notion",
   },
   {
     num: 5,
-    cite: "Editorial craft references: SID-2 Technical Report (three-column reading grid, inline figure toggles, margin sidenotes) and Architect Labs Frostbite (editorial left rail, serif display headlines, cobalt telemetry).",
+    cite: "Editorial design reference: SID-2 Technical Report (three-column reading grid, inline figure toggles, margin sidenotes).",
     url: "https://www.sid.ai/research/sid-2-technical-report",
-    label: "sid.ai & architectlabs.com",
+    label: "sid.ai/research/sid-2-technical-report",
   },
 ]
