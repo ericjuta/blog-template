@@ -1,4 +1,5 @@
 import assert from "node:assert/strict"
+import { createHash } from "node:crypto"
 import { readFileSync } from "node:fs"
 import { join } from "node:path"
 import { JSDOM } from "jsdom"
@@ -26,7 +27,11 @@ for (const url of sitemap.querySelectorAll("loc")) {
   const markdownPath = path ? `${path}.md` : "index.md"
   assert.equal(localPath(alternate.href), markdownPath)
   const markdown = read(markdownPath)
-  assert.equal(markdown.split("\n", 1)[0], `# ${heading}`)
+  const [frontmatter, body] = markdown.slice(4).split("\n---\n", 2)
+  assert.ok(markdown.startsWith("---\n"))
+  assert.ok(frontmatter.includes(`title: ${JSON.stringify(heading)}`))
+  assert.ok(frontmatter.includes(`canonical: ${JSON.stringify(url.textContent)}`))
+  assert.equal(body.trimStart().split("\n", 1)[0], `# ${heading}`)
   assert.ok(markdown.length >= 500)
   assert.ok(markdown.includes(`[HTML version](${url.textContent})`))
   if (path.startsWith("posts/")) assert.ok(markdown.includes("## Notes & References"))
@@ -38,11 +43,13 @@ for (const url of sitemap.querySelectorAll("loc")) {
   if (path) assert.ok(graph.some((node) => node["@type"] === "BreadcrumbList"))
 }
 
-for (const path of ["llms.txt", "posts/llms.txt"]) {
+for (const path of ["llms.txt", "posts/llms.txt", "design-system/llms.txt"]) {
   const index = read(path)
   assert.match(index, /^# /)
   for (const [, url] of index.matchAll(/\]\((https?:[^)]+)\)/g)) {
-    assert.ok(read(localPath(url)).length > 100)
+    const path = localPath(url)
+    const file = path === "design-system" ? `${path}/index.html` : path
+    assert.ok(read(file).length > 100)
   }
 }
 
@@ -51,6 +58,12 @@ const schemaFeed = parse(read(schemaMap), "text/xml").querySelector("loc").textC
 assert.equal(parse(read(localPath(schemaFeed)), "text/xml").documentElement.tagName, "rss")
 for (const { url } of JSON.parse(read(".well-known/ard.json")).entries) {
   assert.ok(read(localPath(url)).length > 100)
+}
+
+for (const { url, digest, name } of JSON.parse(read(".well-known/agent-skills/index.json")).skills) {
+  const skill = read(localPath(url))
+  assert.ok(skill.startsWith(`---\nname: ${name}\n`))
+  assert.equal(digest, `sha256:${createHash("sha256").update(skill).digest("hex")}`)
 }
 
 const notFound = parse(read("404.html"))

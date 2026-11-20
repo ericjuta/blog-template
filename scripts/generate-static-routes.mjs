@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs"
 import { dirname, join } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -187,6 +188,7 @@ const pages = [
     file: "index.html",
     markdownPath: "/index.md",
     name: flagship.title,
+    description: flagship.subtitle,
     url: HOME,
     entity: { ...blogPosting(flagship), mainEntityOfPage: HOME },
     post: flagship,
@@ -270,8 +272,16 @@ for (const route of pages) {
       const byline = route.post ? `Published ${route.post.date} · ${route.post.authors}\n\n` : ""
       const body = turndown.turndown(content.innerHTML)
       const document = `${headline}\n\n[HTML version](${route.url})\n\n${byline}${body}\n`
+      const metadata = [
+        "---",
+        `title: ${JSON.stringify(heading.textContent.trim())}`,
+        `description: ${JSON.stringify(route.description)}`,
+        `canonical: ${JSON.stringify(route.url)}`,
+        "---",
+        "",
+      ].join("\n")
       markdown.set(route.path, document)
-      write(route.markdownPath.slice(1), document)
+      write(route.markdownPath.slice(1), `${metadata}\n${document}`)
     } finally {
       window.close()
     }
@@ -287,6 +297,16 @@ const sectionIndex = `# ${SITE_NAME}: Research posts
 ${posts.map((post) => `- [${post.title}](${post.url}.md): ${post.subtitle}`).join("\n")}
 `
 write("posts/llms.txt", sectionIndex)
+write("design-system/llms.txt", `# ${SITE_NAME}: Design system
+
+> Examples of the UI SDK primitives used in the research demonstrations, including keyboard navigation and accessible interaction states.
+
+## Gallery
+
+- [Component gallery in Markdown](${HOME}design-system.md): Overview of the examples and their intended interactions.
+- [Interactive component gallery](${HOME}design-system): Try the buttons, switches, tabs, citation popovers, EvidenceStepper, and Waterfall with JavaScript.
+- [Evidence-first interfaces report](${flagship.url}.md): How the research uses these primitives to make figures inspectable.
+`)
 write("llms.txt", `# ${SITE_NAME}
 
 > ${SITE_DESCRIPTION}
@@ -300,12 +320,13 @@ Use this publication to find case studies on evidence provenance and agent-addre
 - [Featured report](${HOME}index.md): ${flagship.title}.
 - [Research archive](${SITE_ORIGIN}${RESEARCH_PATH}.md): Browse the published reports and case studies.
 - [Research post index](${HOME}posts/llms.txt): Choose a post by topic.
-- [Design system gallery](${HOME}design-system.md): UI SDK component examples.
+- [Design system index](${HOME}design-system/llms.txt): UI SDK component examples.
 
 ## Optional
 
 - [All posts in one file](${HOME}llms-full.txt): Article text and references for every research post; interactive figures are linked.
 - [RSS feed](${HOME}feed.xml): Follow new articles.
+- [Read REA Research skill](${HOME}.well-known/agent-skills/read-rea-research/SKILL.md): Find articles, read evidence in context, and cite primary sources.
 `)
 write("llms-full.txt", `# ${SITE_NAME}: Collected research posts\n\n${posts.map((post) => markdown.get(post.path)).join("\n---\n\n")}`)
 
@@ -341,5 +362,19 @@ write(ARD_PATH.slice(1), `${JSON.stringify({
       representativeQueries: ["How can I follow new REA Research posts?", "What is the latest report in REA Research?"],
     },
   ],
+}, null, 2)}\n`)
+const skillName = "read-rea-research"
+const skillPath = `/.well-known/agent-skills/${skillName}/SKILL.md`
+const skill = readFileSync(join(DIST, skillPath.slice(1)))
+const description = /^description: (.+)$/m.exec(skill.toString("utf8"))?.[1]
+if (!description) throw new Error(`Missing description in ${skillPath}`)
+write(".well-known/agent-skills/index.json", `${JSON.stringify({
+  skills: [{
+    name: skillName,
+    type: "skill-md",
+    description,
+    url: skillPath,
+    digest: `sha256:${createHash("sha256").update(skill).digest("hex")}`,
+  }],
 }, null, 2)}\n`)
 console.log(`Generated ${pages.length} HTML pages, ${markdown.size} Markdown alternates, and discovery files in dist/.`)
