@@ -1,7 +1,8 @@
-export const DEFAULT_SITE_ORIGIN = "https://askgina-blog.pages.dev"
+export const DEFAULT_SITE_ORIGIN = "https://example.com"
 export const SITE_NAME = "REA Research"
 export const SITE_DESCRIPTION =
   "Interactive technical reports combining Reverse Engineer Anything (REA) evidence provenance with Vercel UI SDK headless primitives and live agent bridges."
+export const PUBLISHER_NAME = SITE_NAME
 
 function readRuntimeOrigin(): string | undefined {
   const runtime: unknown = globalThis

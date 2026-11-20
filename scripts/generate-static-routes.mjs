@@ -10,7 +10,7 @@ import TurndownService from "turndown"
 import { App } from "../src/App.tsx"
 import { BLOG_POSTS } from "../src/data/blog-data.ts"
 import { parseRoute } from "../src/lib/router.ts"
-import { DEFAULT_SITE_ORIGIN, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN } from "../src/lib/site.ts"
+import { DEFAULT_SITE_ORIGIN, PUBLISHER_NAME, SITE_DESCRIPTION, SITE_NAME, SITE_ORIGIN } from "../src/lib/site.ts"
 import { generateOgAssets } from "./generate-og-assets.mjs"
 
 const HOME = `${SITE_ORIGIN}/`
@@ -93,9 +93,8 @@ function blogPosting(post) {
 const publisher = {
   "@type": "Organization",
   "@id": PUBLISHER_ID,
-  name: "Ask Gina",
-  url: "https://askgina.ai/",
-  sameAs: ["https://github.com/askgina"],
+  name: PUBLISHER_NAME,
+  url: HOME,
 }
 const website = {
   "@type": "WebSite",

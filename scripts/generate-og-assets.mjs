@@ -1,6 +1,7 @@
 import { mkdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { deflateSync } from "node:zlib"
+import { SITE_NAME, SITE_ORIGIN } from "../src/lib/site.ts"
 
 // Seven two-digit hex row masks per glyph, with the leftmost pixel in bit 4.
 const font = {
@@ -157,7 +158,9 @@ function postCard(post) {
   wrap(post.subtitle, 58, 4).forEach((line, i) => text(line, 72, subtitleTop + i * 31, 3, 0xc2c2c2))
 
   rect(72, 545, 1056, 1, 0x404040)
-  text("REA RESEARCH · askgina-blog.pages.dev", 72, 571, 3, 0xc2c2c2)
+  const footerHost = new URL(SITE_ORIGIN).host
+  const [footer = ""] = wrap(`${SITE_NAME.toUpperCase()} · ${footerHost}`, 58, 1)
+  text(footer, 72, 571, 3, 0xc2c2c2)
   return image.png()
 }
 

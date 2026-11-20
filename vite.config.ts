@@ -7,7 +7,6 @@ export default defineConfig({
     host: "127.0.0.1",
     port: 5179,
     strictPort: true,
-    allowedHosts: ["codex-lb.tail497567.ts.net"],
   },
   build: {
     rollupOptions: {
